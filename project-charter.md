@@ -1,6 +1,6 @@
 # Mezyad — Project Charter
 
-**Status:** Draft — Tasks 0 and 1 completed; Scope, Risks, and High-Level Plan will be added by the team.
+**Status:** Draft — Tasks 0, 1, and 2 completed; Risks and High-Level Plan will be added by the team.
 
 ## 1. Project Objectives
 
@@ -33,3 +33,26 @@ Mezyad aims to organize auctions for high value and rare items across five categ
 Ghadi Alzhrani, Abeer Alsayari, Tala Alhudhaybi, and Aseel Alzhrani work as project team members with **equal shared responsibility** for planning, designing, developing, testing, and documenting Mezyad. At the start of each development stage, the team will agree on specific tasks for each member and record who is responsible for completing them. All members will discuss decisions and review the results together.
 
 Ghadi has expressed an interest in **user experience (UX) and interface design (UI)**. No permanent specializations have been assigned to team members at this stage.
+
+## 3. Project Scope
+
+Mezyad's MVP will focus on the complete core auction journey: a user can create or browse a listing, bid while its auction is active, and follow the item from auction closure to a confirmed sale. The scope is intentionally limited to a web-based demonstration of this workflow so the team can deliver and test it within the three-month project period.
+
+### In Scope
+
+- User registration, login, and role-based access for buyers and sellers.
+- Seller-created auction listings with images, descriptions, a starting price, an auction start and end time, and the category-specific information required for the five selected categories: camels, newly built unsold properties, high-end handbags and rare collectibles, distinctive vehicle registration plates, and rare or discontinued vehicles.
+- Browsing auction listings by category and viewing each item's details, current highest bid, and auction status.
+- Bidding by registered users during an active auction, including validation that a bid is higher than the current highest bid and submitted before the auction closes.
+- Automatic auction closure at the scheduled end time and status changes between **Active Auction**, **Pending Transaction**, and **Sold**.
+- Seller confirmation of payment receipt and buyer confirmation of item receipt before a pending transaction is marked as sold.
+- Test data, documented test scenarios, and a working MVP demonstration of the core flow.
+
+### Out of Scope
+
+- Electronic payment processing, escrow, and Apple Pay integration. Payment or cheque arrangements take place outside the MVP.
+- Nafath integration, automated identity verification, ownership verification, legal checks, and official regulatory approval workflows.
+- Cancellation, dispute resolution, refunds, and automatic re-listing for incomplete transactions.
+- Native iOS or Android applications; the MVP will be a web application.
+- Auction categories beyond the five selected categories, as well as advanced marketplace functions such as seller ratings, buyer reviews, live chat, recommendation engines, and marketing notifications.
+- Operating the MVP as a live public marketplace or handling real funds and legally binding transactions.
