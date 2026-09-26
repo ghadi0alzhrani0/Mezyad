@@ -91,6 +91,20 @@ flowchart TD
     Redis -- "Pub/Sub broadcast" --> WS
 ```
 
+
+## Containerization & Environment Consistency (Docker)
+
+To ensure that the entire platform (Frontend, Backend, PostgreSQL, and Redis) runs identically across every team member's machine without setup discrepancies, Mezyad is fully containerized using Docker and Docker Compose. 
+
+Instead of manual local installations, a single command spins up the isolated services:
+- **Database & Cache:** PostgreSQL (36 tables) and Redis (locks and live state) run in dedicated persistent containers.
+- **Backend Service:** The Node.js monolith runs in its container with direct environment linkage.
+- **Frontend SPA:** Vanilla JavaScript files are served efficiently via a lightweight Nginx container.
+
+This guarantees a reproducible, production-like development environment from day one.
+
+
+
 Walking through the diagram left to right: a user's browser talks to the SPA over two independent channels. Transactional actions flow through Express into the service layer. Time-critical actions — almost entirely bidding — flow through the Socket.io gateway into that same service layer. The service layer is the only code in the system that decides *what* gets written where: durable, legally meaningful state goes to PostgreSQL; fast-changing, short-lived coordination state goes to Redis. Redis then feeds back into the WebSocket gateway through Pub/Sub, which is how a price change caused by one bidder's request reaches every other connected client without the gateway ever having to poll anything.
 
 The mock services sit to the side of this flow for a specific reason: they are called *by* the service layer, but they don't own any state of their own — they simply return a realistic, correctly-shaped response that `AuthController` and `EscrowService` consume exactly as they would consume a real Nafath or Open Banking response. Nothing about the request/response contract changes based on whether the service behind it is real or simulated.
