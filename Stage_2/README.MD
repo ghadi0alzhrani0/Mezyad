@@ -41,7 +41,7 @@ The Project Charter serves as the foundational reference point for all subsequen
 ---
 
 ## Authors & Project Team
-* Abeer Al-Saiari (Project Manager & DevOps Lead)
-* Ghadi Al-Zahrani (Database & Architecture Lead)
-* Aseel Al-Zahrani (Backend & Real-Time Engine Lead)
-* Tala Al-Hudaibi (Frontend UI/UX & Client Logic Lead)
+* Abeer Al-Saiari 
+* Ghadi Al-Zahrani 
+* Aseel Al-Zahrani 
+* Tala Al-Hudaibi 
