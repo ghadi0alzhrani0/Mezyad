@@ -7,13 +7,20 @@ Graduation Capstone Project
 
 ## 1. Preface
 
-Mezyad is built around one hard problem, and it's bigger than just handling concurrent bids correctly: how do you build genuine end-to-end trust for a high-value transaction between two strangers who've never met — verifying who someone actually is, confirming the money behind their bid is real, running an auction that's fair under defined auction rules and strict concurrency guarantees, and then actually getting the asset from seller to buyer without either side getting burned? Every architectural choice in this document, from identity verification through escrow through the live auction itself through physical handover, traces back to that one problem: safety, at every single step, for a transaction that's too valuable to get wrong.
+Mezyad is a high-value asset auction platform designed around one core problem: building end-to-end trust between strangers during a financially significant transaction.
 
-We didn't reach for a fashionable stack to make this look impressive. We reached for the smallest set of tools that could solve it *correctly*: a single Node.js service to keep the system easy to reason about, PostgreSQL to be the authoritative source of durable financial truth, and Redis to provide fast coordination and real-time state. The interesting engineering in Mezyad isn't in the number of technologies we used — it's in how deliberately we drew the line between what PostgreSQL is responsible for and what Redis is responsible for, and in how strictly we enforced that line in code.
+The platform covers the transaction lifecycle from identity verification and item appraisal to proof of funds, escrow, real-time bidding, auction settlement, secure physical handover, disputes, and seller withdrawal.
 
-Where a real integration would normally sit — verifying a user's national identity, checking that a bidder's bank account actually has the funds — we built clean, interface-matched **mock services**. This wasn't a shortcut we're hiding; it's a deliberate architectural decision. The mock and a real integration expose the exact same contract, so the rest of the system — `AuthController`, `EscrowService`, every downstream consumer — has no idea, and needs no code change, whether it's talking to a simulation or the real thing. That separation of concerns is the actual point being demonstrated.
+The architecture intentionally uses a focused technology stack:
 
-What follows is the complete technical blueprint: the user stories that shaped our priorities, the architecture that makes the system work, the class design that keeps our backend maintainable, the database design that keeps our data honest, the sequence diagrams that trace our critical flows end to end, our API surface, and how we kept quality under control as we built it.
+- **Node.js + Express** for the backend
+- **Socket.io** for real-time auction communication
+- **PostgreSQL** as the authoritative source of durable financial and audit state
+- **Redis** for fast coordination, caching, locks, and Pub/Sub
+- **Docker + Docker Compose** for a reproducible development environment
+- **Mock KYC and Open Banking services** to simulate external integrations
+
+Redis coordinates and caches; it never decides whether a financial or bidding operation is accepted. PostgreSQL remains the authoritative source of truth.
 
 ---
 
@@ -23,105 +30,106 @@ What follows is the complete technical blueprint: the user stories that shaped o
 
 | Priority | Role | User Story |
 |---|---|---|
-| **Must Have** | Bidder | As a bidder, I want to see the auction price update instantly through a WebSocket connection, without refreshing the page, so that I never lose a bid to network lag in the final seconds. |
-| **Must Have** | Seller | As a seller, I want to list an item with supporting documents and photos, so that it can go through an appraisal step before it's allowed to go live. |
-| **Must Have** | System | As the system, I want to lock a security deposit in the bidder's wallet before they're allowed to place a bid, so that no bid is ever placed without real financial backing behind it. |
-| **Should Have** | Admin | As an admin, I want a moderation view of active auctions and open disputes, so that I can intervene quickly if something looks wrong. |
-| **Should Have** | Winner | As a winning bidder, I want an invoice generated automatically the moment the auction closes, so that I have a clear, timestamped record of what I owe. |
-| **Could Have** | Bidder | As a bidder, I want to set a maximum proxy bid, so that the system bids for me automatically up to my limit without me having to sit and watch the clock. |
-
-Each priority level here maps directly onto risk: the "Must Have" rows are the three things that, if broken, make the entire platform untrustworthy — a stale price, an unverified item, or an unbacked bid. Everything below that is real value, but value that a working core doesn't strictly depend on.
+| **Must Have** | Bidder | As a bidder, I want to see auction prices update instantly so that I can participate without refreshing the page. |
+| **Must Have** | Seller | As a seller, I want to submit an asset with documents and photos so that it can be reviewed before going live. |
+| **Must Have** | System | As the system, I want to lock a security deposit before bidding so that bids have financial backing. |
+| **Should Have** | Admin | As an admin, I want to monitor active auctions and disputes so that I can intervene when necessary. |
+| **Should Have** | Winner | As a winning bidder, I want an invoice generated after auction closure. |
+| **Could Have** | Bidder | As a bidder, I want to configure a maximum proxy bid so that the system can bid automatically for me. |
 
 ### 2.2 UI Mockups & Design Approach
 
-The interface is deliberately built to reduce cognitive load during the one moment that actually matters: the closing seconds of a bid. The live price, the countdown timer, and the bid input stay in constant view, on a dark, high-contrast layout, so a bidder never has to scroll or search for the number that's about to change under them.
+The frontend is implemented as a lightweight SPA using Vanilla JavaScript, HTML5, CSS3, the Fetch API, and a Socket.io client. Communication is separated by purpose:
 
-Architecturally, this is a Single Page Application built in **pure Vanilla JavaScript, HTML5, and CSS3** — no framework in between us and the DOM. That was a deliberate, practical call for a two-month build: with four of us already splitting our time across a real-time backend and a dual-database layer, taking on a framework's tooling and learning curve on top of that wasn't where our limited time was best spent. Vanilla JS kept the frontend lightweight and predictable, and let us put our energy where the actual hard engineering problem lived — the backend. Communication is deliberately split by purpose rather than convenience:
-
-* The **Fetch API** carries everything transactional — logging in, submitting a listing, viewing bid history. These are one-off requests where the normal overhead of an HTTP round trip is completely invisible to the user; nobody notices or cares if a login takes a beat longer.
-* A **Socket.io client** carries everything time-sensitive — price ticks, countdown extensions, being outbid. These are events where any added delay matters, because a competing bidder's request could land in that exact gap — so this channel is built specifically to avoid overhead the REST channel can comfortably afford.
-
-Keeping these two channels physically separate means a slow REST call — say, a seller uploading a large document — can never block a live price update from reaching a bidder in a different auction entirely.
+- **Fetch API:** authentication, listings, auction details, escrow, withdrawals, and other transactional operations.
+- **Socket.io:** live bidding, price updates, auction extensions, and real-time notifications.
 
 ---
 
 ## 3. System Architecture
 
-Mezyad runs as a single Node.js monolith. That single-process design is what makes the rest of the architecture legible: every request, whether it arrives over HTTP or over a WebSocket, ultimately calls into the same shared service layer, which is the only layer allowed to touch the database or Redis. Express and Socket.io are two different *doors* into that layer — they are never two different sources of truth.
+Mezyad uses a Node.js monolithic architecture where REST and WebSocket requests enter through separate gateways but share the same service layer.
 
 ```mermaid
 flowchart TD
     User((Bidder / Seller))
-
     subgraph Frontend["Frontend Layer"]
-        UI["Vanilla JS - HTML5 - CSS3 (SPA)"]
+        UI["Vanilla JS<br/>HTML5 / CSS3<br/>SPA"]
     end
-
-    User -- "HTTPS (Fetch)" --> UI
-    User -- "WSS (Socket.io)" --> UI
-
+    User -->|"HTTPS / Fetch"| UI
+    User -->|"WSS / Socket.io"| UI
     subgraph Backend["Node.js Monolith"]
-        direction TB
         Express["Express REST API"]
         WS["Socket.io Gateway"]
-        Services["Service Layer: AuctionEngine, EscrowService, AuthController, NotificationService"]
-
+        Services["Shared Service Layer"]
+        Auction["AuctionEngine"]
+        Escrow["EscrowService"]
+        Auth["AuthController"]
+        Invoice["InvoiceService"]
+        Dispute["DisputeService"]
+        Notification["NotificationService"]
         Express --> Services
         WS --> Services
+        Services --> Auction
+        Services --> Escrow
+        Services --> Auth
+        Services --> Invoice
+        Services --> Dispute
+        Services --> Notification
     end
-
-    UI -- "REST calls" --> Express
-    UI -- "WebSocket events" --> WS
-
-    subgraph Mocks["Simulated External Services"]
-        MockKYC["Mock Nafath KYC API"]
-        MockBank["Mock Open Banking API"]
+    UI --> Express
+    UI --> WS
+    subgraph External["Mock External Services"]
+        KYC["Mock KYC / Nafath API"]
+        Bank["Mock Open Banking API"]
     end
-
-    Services -- "identity check" --> MockKYC
-    Services -- "liquidity check" --> MockBank
-
-    subgraph DataLayer["Persistence Layer"]
-        PG[("PostgreSQL: 30 Normalized Tables, ACID Source of Truth")]
-        Redis[("Redis: Live State, Locks and Pub/Sub")]
+    Auth --> KYC
+    Escrow --> Bank
+    subgraph Data["Persistence & Coordination"]
+        PG[("PostgreSQL<br/>30 Tables<br/>Authoritative State")]
+        Redis[("Redis<br/>Cache / Locks / PubSub")]
     end
-
-    Services -- "durable writes" --> PG
-    Services -- "live state and locks" --> Redis
-    Redis -- "Pub/Sub broadcast" --> WS
+    Services --> PG
+    Services --> Redis
+    Redis -->|"Pub/Sub"| WS
 ```
 
-## Containerization & Environment Consistency (Docker)
+### 3.1 Containerization & Environment Consistency
 
-To ensure that the entire platform (Frontend, Backend, PostgreSQL, and Redis) runs identically across every team member's machine without setup discrepancies, Mezyad is fully containerized using Docker and Docker Compose.
+Mezyad is containerized using Docker and Docker Compose. The development environment consists of the Node.js backend, PostgreSQL, Redis, and the frontend service, each in its own container.
 
-Instead of manual local installations, a single command spins up the isolated services:
-- **Database & Cache:** PostgreSQL (30 normalized tables) and Redis (locks and live state) run in dedicated persistent containers.
-- **Backend Service:** The Node.js monolith runs in its container with direct environment linkage.
-- **Frontend SPA:** Vanilla JavaScript files are served efficiently via a lightweight Nginx container.
+```mermaid
+flowchart LR
+    Compose["Docker Compose"]
+    Compose --> Backend["Node.js Backend"]
+    Compose --> PG["PostgreSQL"]
+    Compose --> Redis["Redis"]
+    Compose --> Frontend["Frontend / Nginx"]
+    Backend --> PG
+    Backend --> Redis
+    Frontend --> Backend
+```
 
-This guarantees a reproducible, production-like development environment from day one.
-
-Walking through the diagram left to right: a user's browser talks to the SPA over two independent channels. Transactional actions flow through Express into the service layer. Time-critical actions — almost entirely bidding — flow through the Socket.io gateway into that same service layer. The service layer is the only code in the system that decides *what* gets written where: durable financial and audit-relevant records go to PostgreSQL; fast-changing, short-lived coordination state goes to Redis. Redis then feeds back into the WebSocket gateway through Pub/Sub, which is how a price change caused by one bidder's request reaches every other connected client without the gateway ever having to poll anything.
-
-The mock services sit to the side of this flow for a specific reason: they are called *by* the service layer, but they don't own any state of their own — they simply return a response shaped to our internal integration contract, which `AuthController` and `EscrowService` consume exactly as they would consume a response from a real provider behind that same contract. Nothing about the request/response boundary changes based on whether the service behind it is real or simulated.
+Docker Compose provides a reproducible environment across team members' machines and avoids dependency differences between local setups.
 
 ---
 
 ## 4. Backend Components & Class Design
 
-We deliberately organized the backend around a small number of single-responsibility services rather than one large controller file. The reasoning is concurrency of a different kind — not database concurrency, but *team* concurrency: with four people working in the same codebase, a clear class boundary is what lets two of us work on escrow logic and bidding logic in the same week without stepping on each other's changes.
+The backend follows a service-oriented structure inside the Node.js monolith.
 
 ### 4.1 Core Classes
 
-* **`AuthController`** — owns registration, login, and session issuance, and delegates identity verification to the mock KYC service. It knows nothing about auctions, bids, or money — that separation means a change to how we verify identity can never accidentally touch financial logic.
-* **`AuctionEngine`** — owns the full lifecycle of an auction: opening it, accepting or rejecting incoming bids, closing it at `end_time`, and triggering anti-sniping extensions when a bid lands in the final seconds. This is the class we tested most aggressively, because it's the single point where a logic error would directly cost someone real money. The trickiest edge case is a bid arriving in the exact same instant `end_time` is reached — closing an auction and evaluating a bid are both gated by the same Redlock for that `auction_id`, so the two can never actually happen concurrently. Whichever operation acquires the lock first decides the outcome: if the closing job gets there first, the auction is already closed by the time the bid is evaluated, and it's rejected outright; if the bid gets there first, it's evaluated as valid and, because it landed inside the anti-sniping window, extends `end_time` rather than racing the clock. There's no ambiguous middle state where both could be considered to have won. Closing an auction is also what triggers generation of the signed, time-bound handover token that secures the physical exchange between winner and seller (see Section 5.1). The MVP is scoped entirely to the live ascending format described above — that's the one auction type this engine runs today; anything beyond it is out of scope for this release (see the Future Enhancements note at the end of this document).
-* **`EscrowService`** — the only class in the entire codebase permitted to modify a wallet's `available_balance` or `escrow_frozen_balance`. Locking a deposit, releasing it after a successful handover, and refunding it after a resolved dispute all pass through here and only here. That single-writer discipline is what makes the ledger auditable — if a balance is ever wrong, there is exactly one place to look. The deposit amount itself isn't a flat number: it's set per auction, either as a fixed value or as a percentage of the starting price defined in `auction_rules`. Each lock is also recorded as its own `escrow_deposits` row rather than folded into a single running total, so a bidder active in three auctions at once has three separate, individually-tracked amounts moved out of `available_balance` and into `escrow_frozen_balance`. `EscrowService` always sums those individual rows rather than trusting one combined figure, which is exactly what stops one auction's deposit from ever being silently double-counted against, or confused with, another.
-* **`WsHandler`** — the Socket.io gateway. It authenticates each socket connection, subscribes a client to the correct auction "room," and translates internal domain events (`bid.accepted`, `auction.extended`) into the outbound WebSocket messages the frontend listens for.
-* **`BidValidator`** — a small, stateless helper that `AuctionEngine` calls before accepting any bid: it checks the minimum increment, confirms the auction is still within its active time window, and confirms the bidder actually has a locked escrow deposit. We split this out from `AuctionEngine` specifically so these rules could be unit-tested in isolation, without needing a running auction, a database, or Redis.
-* **`NotificationService`** — renders every user-facing notification from the append-only `event_store`, pushing it live over WebSocket if the user is currently connected, or queuing it for delivery the next time they log in if they're not. Treating a notification as a rendered view over the audit trail — rather than maintaining a second, separately-written log — meant one less place for the two to drift out of sync.
-* **`InvoiceService`** — the moment `AuctionEngine` closes an auction with a declared winner, this generates the PDF invoice and tax breakdown for that transaction.
-* **`DisputeService`** — opens, tracks, and resolves disputes raised after a handover. It is the only other class besides `EscrowService` allowed to trigger a refund, and it can only do so after an admin decision has actually been recorded — never automatically.
+| Component | Responsibility |
+|---|---|
+| `AuthController` | Registration, login, session issuance, and identity verification |
+| `AuctionEngine` | Auction lifecycle, bidding, closing, and anti-sniping |
+| `EscrowService` | Escrow locking, release, and refunds |
+| `WsHandler` | WebSocket authentication, auction rooms, and real-time events |
+| `BidValidator` | Bid validation rules |
+| `NotificationService` | User notifications and reconnection handling |
+| `InvoiceService` | Invoice generation |
+| `DisputeService` | Dispute lifecycle and admin resolution |
 
 ### 4.2 Class Diagram
 
@@ -130,109 +138,318 @@ classDiagram
     class AuthController {
         +register(userData)
         +login(credentials)
-        +verifyIdentity(userId) MockKYCResult
-        +issueSession(user) Token
+        +verifyIdentity(userId)
+        +issueSession(user)
     }
-
     class AuctionEngine {
-        -redis
-        -db
         +createAuction(itemId, rules)
         +placeBid(auctionId, bidderId, amount)
         +closeAuction(auctionId)
         +extendIfSniped(auctionId)
     }
-
     class BidValidator {
-        +isAboveCurrentPrice(bid, auction) bool
-        +isWithinTimeWindow(auction) bool
-        +hasLockedEscrow(bidderId, auctionId) bool
+        +isAboveCurrentPrice(bid, auction)
+        +isWithinTimeWindow(auction)
+        +hasLockedEscrow(bidderId, auctionId)
     }
-
     class EscrowService {
         +lockDeposit(userId, auctionId, amount)
         +releaseToSeller(auctionId)
         +refundToBidder(auctionId, userId)
-        +checkLiquidity(userId) MockBankResult
+        +checkLiquidity(userId)
     }
-
     class WsHandler {
         +onConnect(socket)
         +joinAuctionRoom(socket, auctionId)
         +broadcastPriceUpdate(auctionId, payload)
         +broadcastExtension(auctionId, newEndTime)
     }
-
     class NotificationService {
         +notify(userId, type, content)
         +queueOffline(userId, content)
     }
-
     class InvoiceService {
-        +generateInvoice(auctionResult) PDF
+        +generateInvoice(auctionResult)
     }
-
     class DisputeService {
         +openDispute(auctionId, buyerId, reason)
         +resolve(disputeId, decision)
     }
-
-    AuctionEngine --> BidValidator : uses
-    AuctionEngine --> EscrowService : requests locks/releases
-    AuctionEngine --> WsHandler : emits events to
-    AuctionEngine --> NotificationService : triggers
-    AuctionEngine --> InvoiceService : on close
-    DisputeService --> EscrowService : triggers refund
-    AuthController --> NotificationService : on registration
+    AuctionEngine --> BidValidator
+    AuctionEngine --> EscrowService
+    AuctionEngine --> WsHandler
+    AuctionEngine --> NotificationService
+    AuctionEngine --> InvoiceService
+    DisputeService --> EscrowService
+    AuthController --> NotificationService
 ```
-
-`AuctionEngine` sits at the center of this diagram by design — almost everything the platform does eventually routes through it, because almost everything the platform does is, in one way or another, a consequence of a bid being placed or an auction closing.
 
 ---
 
 ## 5. Database Design (Polyglot Persistence)
 
-The single question this section has to answer convincingly is: **why two databases instead of one?** The answer is that PostgreSQL and Redis are each excellent at solving a problem the other one isn't built for, and forcing one database to do both jobs would have meant compromising on one of them.
+PostgreSQL is the authoritative, durable source of truth for all financial, business, and audit state. Redis is a real-time coordination layer — locks, caching, and Pub/Sub — and never decides whether a bid, payment, or escrow operation is accepted; that decision is made once, inside a PostgreSQL transaction.
 
-### 5.1 PostgreSQL — ACID for Everything That Must Never Be Wrong
+### 5.1 PostgreSQL ER Diagram
 
-An escrow ledger cannot tolerate eventual consistency. The instant a deposit is locked, that lock has to be atomic and durable — there is no acceptable window where a wallet's displayed balance is stale or ambiguous. PostgreSQL gives us three things Redis fundamentally cannot:
+> Note: this ERD has **not** been confirmed against the actual migrations/models — it should not be read as verified to match them. It is a best-effort reconstruction from what's documented in this README, and must be checked field-by-field against the real schema before final submission. Two names in particular need direct confirmation, since they're the kind of thing that tends to drift between docs and code: `authenticator_reviews` and `kyc_verifications`.
 
-* **Atomicity** — a wallet update, an `escrow_deposits` insert, and a `transactions` log entry either all succeed together or none of them do. There's no partial state where money appears to have moved but the audit trail doesn't reflect it.
-* **Durability** — anything representing money, ownership, or an audit-relevant record (invoices, dispute resolutions, KYC status) survives a crash, a restart, or a bad deploy, because it was committed to disk, not held in memory.
-* **Relational integrity, enforced by the database itself** — foreign keys guarantee that every reference actually points to something real: a bid's `auction_id` must correspond to an auction that genuinely exists, an item's `seller_id` must correspond to an actual user. What a foreign key can't tell you, and was never meant to, is whether that auction is still *open*. That's a business rule, not a structural one, so it lives where business rules belong — inside `AuctionEngine`'s transaction, which explicitly checks an auction's status and timing before it ever allows a bid to be written. The two mechanisms are deliberately complementary: foreign keys catch a reference that's broken, and application logic catches a reference that's valid but no longer meaningful.
+```mermaid
+erDiagram
+    users {
+        uuid id PK
+        string name
+        string email
+        string password_hash
+        uuid role_id FK
+        string notification_preferences
+        datetime created_at
+    }
+    roles {
+        uuid id PK
+        string name
+    }
+    permissions {
+        uuid id PK
+        string name
+    }
+    role_permissions {
+        uuid role_id PK, FK
+        uuid permission_id PK, FK
+    }
+    kyc_verifications {
+        uuid id PK
+        uuid user_id FK
+        string status
+        string provider_reference
+        datetime verified_at
+    }
+    user_sessions {
+        uuid id PK
+        uuid user_id FK
+        string token_hash
+        datetime expires_at
+    }
+    wallets {
+        uuid id PK
+        uuid user_id FK
+        decimal available_balance
+        decimal escrow_frozen_balance
+    }
+    bank_accounts {
+        uuid id PK
+        uuid user_id FK
+        string iban
+        string status
+    }
+    escrow_deposits {
+        uuid id PK
+        uuid auction_id FK
+        uuid bidder_id FK
+        decimal amount
+        string status
+    }
+    transactions {
+        uuid id PK
+        uuid user_id FK
+        uuid auction_id FK
+        decimal amount
+        string type
+        string status
+        datetime created_at
+    }
+    withdrawal_requests {
+        uuid id PK
+        uuid seller_id FK
+        uuid bank_account_id FK
+        decimal amount
+        string status
+        string rejection_reason
+        datetime created_at
+    }
+    invoices {
+        uuid id PK
+        uuid auction_id FK
+        uuid winner_id FK
+        decimal subtotal
+        decimal platform_fee
+        decimal total
+        string status
+    }
+    categories {
+        uuid id PK
+        string name
+    }
+    items {
+        uuid id PK
+        uuid seller_id FK
+        uuid category_id FK
+        string title
+        string description
+        string status
+    }
+    item_media {
+        uuid id PK
+        uuid item_id FK
+        string media_url
+        string media_type
+    }
+    item_documents {
+        uuid id PK
+        uuid item_id FK
+        string document_url
+        string document_type
+    }
+    appraisal_workflows {
+        uuid id PK
+        uuid item_id FK
+        string status
+        datetime submitted_at
+        datetime completed_at
+    }
+    authenticator_reviews {
+        uuid id PK
+        uuid appraisal_id FK
+        uuid reviewer_id FK
+        string decision
+        string notes
+    }
+    auctions {
+        uuid id PK
+        uuid item_id FK
+        string status
+        decimal starting_price
+        decimal current_price
+        datetime start_time
+        datetime end_time
+    }
+    bids {
+        uuid id PK
+        uuid auction_id FK
+        uuid bidder_id FK
+        decimal amount
+        string request_id
+        datetime created_at
+    }
+    proxy_bids {
+        uuid id PK
+        uuid auction_id FK
+        uuid bidder_id FK
+        decimal maximum_amount
+        string status
+    }
+    auction_extensions {
+        uuid id PK
+        uuid auction_id FK
+        datetime previous_end_time
+        datetime new_end_time
+        datetime created_at
+    }
+    auction_watchers {
+        uuid auction_id PK, FK
+        uuid user_id PK, FK
+    }
+    auction_rules {
+        uuid id PK
+        uuid auction_id FK
+        decimal minimum_increment
+        decimal deposit_value
+        string deposit_type
+        integer anti_sniping_seconds
+    }
+    auction_results {
+        uuid id PK
+        uuid auction_id FK
+        uuid winner_id FK
+        decimal winning_amount
+        datetime closed_at
+    }
+    secure_handovers {
+        uuid id PK
+        uuid auction_id FK
+        uuid winner_id FK
+        string token_hash
+        datetime expires_at
+        boolean is_scanned_and_released
+    }
+    inspection_appointments {
+        uuid id PK
+        uuid auction_id FK
+        uuid buyer_id FK
+        uuid seller_id FK
+        datetime scheduled_at
+        string status
+    }
+    disputes {
+        uuid id PK
+        uuid auction_id FK
+        uuid opened_by FK
+        string status
+        string admin_decision
+    }
+    dispute_messages {
+        uuid id PK
+        uuid dispute_id FK
+        uuid sender_id FK
+        string content
+        string evidence_url
+        datetime created_at
+    }
+    event_store {
+        uuid id PK
+        uuid user_id FK
+        uuid auction_id FK
+        string event_type
+        string payload
+        datetime created_at
+    }
 
-The schema spans **30 normalized tables**, organized into six logical modules. This is down from an earlier draft that carried 36 tables — the Senior Architecture Review pushed us to prune anything that wasn't earning its place in the MVP, and we agreed with every cut. `sealed_bids`, `user_reviews`, and any residual notion of VIP private-room invites, an AI concierge, or AI-driven price prediction never made it into this release's schema; where a table's job could honestly be absorbed by an existing one instead of standing alone, we merged it rather than keep two structures doing one job:
+    roles ||--o{ users : assigns
+    roles ||--o{ role_permissions : contains
+    permissions ||--o{ role_permissions : grants
+    users ||--o{ kyc_verifications : verifies
+    users ||--o{ user_sessions : owns
+    users ||--|| wallets : owns
+    users ||--o{ bank_accounts : owns
+    users ||--o{ items : sells
+    categories ||--o{ items : categorizes
+    items ||--o{ item_media : contains
+    items ||--o{ item_documents : contains
+    items ||--|| appraisal_workflows : undergoes
+    appraisal_workflows ||--o{ authenticator_reviews : contains
+    users ||--o{ authenticator_reviews : performs
+    items ||--o{ auctions : auctioned_as
+    auctions ||--o{ bids : receives
+    users ||--o{ bids : places
+    auctions ||--o{ proxy_bids : has
+    users ||--o{ proxy_bids : configures
+    auctions ||--o{ auction_extensions : extends
+    auctions ||--o{ auction_watchers : watched_by
+    users ||--o{ auction_watchers : watches
+    auctions ||--|| auction_rules : configured_by
+    auctions ||--o{ escrow_deposits : requires
+    users ||--o{ escrow_deposits : funds
+    users ||--o{ transactions : owns
+    auctions ||--o{ transactions : generates
+    users ||--o{ withdrawal_requests : requests
+    bank_accounts ||--o{ withdrawal_requests : receives
+    auctions ||--|| auction_results : produces
+    users ||--o{ auction_results : wins
+    auctions ||--|| invoices : generates
+    users ||--o{ invoices : receives
+    auctions ||--|| secure_handovers : requires
+    users ||--o{ secure_handovers : authorizes
+    auctions ||--o{ inspection_appointments : schedules
+    users ||--o{ inspection_appointments : attends
+    auctions ||--o{ disputes : creates
+    users ||--o{ disputes : opens
+    disputes ||--o{ dispute_messages : contains
+    users ||--o{ dispute_messages : sends
+    users ||--o{ event_store : triggers
+    auctions ||--o{ event_store : records
+```
 
-**IAM & Security (6 tables)**
-`users`, `roles`, `permissions`, `role_permissions`, `kyc_verifications`, `user_sessions`
-— Authentication, role-based access control, and the record of every user's mock identity verification.
-
-**Ledger & Escrow (6 tables)**
-`wallets`, `bank_accounts`, `escrow_deposits`, `transactions`, `withdrawal_requests`, `invoices`
-— Every movement of money on the platform. Platform fee data now lives directly on `invoices` as a computed breakdown rather than in its own standalone table — one less join for a number that's always read alongside the invoice it belongs to.
-
-**Catalog & Items (6 tables)**
-`categories`, `items`, `item_media`, `item_documents`, `appraisal_workflows`, `authenticator_reviews`
-— Item listings and the human appraisal step that gates them before they're allowed to go live. `items` carries no smart-contract or digital-twin fields in this release; blockchain-backed ownership is future scope, not something half-wired into the current schema.
-
-**Auction Engine (6 tables)**
-`auctions`, `bids`, `proxy_bids`, `auction_extensions`, `auction_watchers`, `auction_rules`
-— The bidding lifecycle itself, including the full history of anti-sniping extensions and every proxy bid limit ever set. There's no `sealed_bids` table in this schema — the live ascending format is the only auction type Mezyad runs, and we'd rather ship one auction type that works completely than two where one is half-built.
-
-**Handover & Disputes (5 tables)**
-`auction_results`, `secure_handovers`, `inspection_appointments`, `disputes`, `dispute_messages`
-— What happens after the hammer falls: physical handover verification, and the full lifecycle of a raised dispute. `secure_handovers` stores more than a raw QR value — the code itself is a signed, time-bound token generated specifically for one `auction_id` and its winning bidder, so it can't be reused for a different auction, presented by anyone else, or honored after its window expires. The moment `is_scanned_and_released` flips to true, that row is effectively closed: a second scan of the same code is checked against that flag and rejected outright, rather than ever triggering a second release of funds. Evidence attached to a dispute lives directly on `dispute_messages` rather than in a separate table, since in practice every piece of evidence arrives attached to a message in the dispute thread.
-
-**Audit (1 table)**
-`event_store`
-— A single, append-only audit trail of every critical action taken on the platform. `NotificationService` renders both live and historical notifications directly from `event_store` rather than maintaining a second, separately-written log, and a user's notification preferences live as a column on their `users` row rather than in a dedicated table. Post-auction reviews were cut from this release entirely rather than folded elsewhere — that feature just isn't part of the current scope.
-
-*(The full Mermaid ER diagram covering all 30 tables and their relationships is provided separately.)*
-
-### 5.1.1 Database Tables
-
-The full list, for quick reference — grouped in the same order as the modules above:
+### 5.2 Database Tables
 
 | # | Table | Purpose |
 |---|---|---|
@@ -259,144 +476,461 @@ The full list, for quick reference — grouped in the same order as the modules 
 | 21 | `proxy_bids` | Stored maximum proxy-bid limits |
 | 22 | `auction_extensions` | Log of anti-sniping time extensions |
 | 23 | `auction_watchers` | Users currently watching an auction |
-| 24 | `auction_rules` | Per-auction configuration (increments, deposit rules, timing) |
+| 24 | `auction_rules` | Per-auction configuration |
 | 25 | `auction_results` | Final outcome of a closed auction |
 | 26 | `secure_handovers` | Signed, time-bound handover QR tokens |
-| 27 | `inspection_appointments` | Scheduled in-person handover/inspection meetings |
+| 27 | `inspection_appointments` | Scheduled inspection/handover meetings |
 | 28 | `disputes` | Raised disputes |
-| 29 | `dispute_messages` | Dispute thread messages, including attached evidence |
-| 30 | `event_store` | Append-only audit trail of all critical actions |
+| 29 | `dispute_messages` | Dispute thread messages and evidence |
+| 30 | `event_store` | Append-only audit trail |
 
-### 5.2 Redis — Speed and Coordination for the Real-Time Layer
+### 5.3 Redis Design
 
-PostgreSQL remains the authoritative source of truth for Mezyad at every moment — every committed bid, every locked deposit, every auction result lives there, permanently, and nowhere else. What PostgreSQL isn't built to do is act as the sole gatekeeper for every incoming bid during a genuine bidding war, where a burst of concurrent requests can target the exact same auction within the exact same second — each of those requests would otherwise have to queue behind the same relational locks and transaction overhead, which exists precisely to guarantee durability, not to arbitrate a race. That's not a shortcoming of the database — it's simply outside the problem it was designed to solve. Redis exists specifically to close that gap: it acts as the fast coordination layer that serializes concurrent bidding operations — through Redlock — before the authoritative transaction is committed to PostgreSQL, so that by the time a write actually reaches PostgreSQL, it's already been serialized and properly ordered. Redis coordinates and caches; it never decides. PostgreSQL's transaction is what actually determines whether a bid is accepted.
+Redis coordinates and caches; PostgreSQL decides and persists.
 
-Two Redis capabilities carry almost the entire real-time layer:
-
-**Redlock (distributed locking).** Before `AuctionEngine` accepts any bid, it must first acquire a short-lived lock scoped to that specific `auction_id`. This is the exact mechanism that prevents the classic race condition of live bidding: two bids arriving within milliseconds of each other, both being evaluated against the same stale price, and both being told they're now the highest bidder. The lock doesn't impose any ordering across the platform as a whole — its scope is deliberately narrow: it guarantees that, for one specific auction, only one bid is ever inside the critical section (read current price, validate, commit) at a time. That narrow scope is exactly where the race condition lives, so that's exactly where the lock needs to apply.
-
-**Pub/Sub (broadcast).** Once a bid has cleared the Redlock, passed validation, and been committed to PostgreSQL as the new authoritative state, its price is published to a channel dedicated to that auction. Every server-side socket subscribed to that channel — and therefore every browser currently watching — receives the update in the same tick, because the WebSocket connection stays open for the life of the auction: there's no repeated HTTP handshake or header overhead standing between the write being confirmed and the client seeing it. No client ever polls for a price; it's pushed the moment the write that actually matters has been confirmed.
-
-Put together, every incoming bid follows the same fixed order, and no step is ever skipped or reordered:
-
-1. Bid arrives (manual or proxy-generated)
-2. Acquire the per-auction Redlock
-3. Fast preliminary Redis price check (optimization only — not a decision)
-4. Authoritative validation via `BidValidator`
-5. PostgreSQL transaction (the actual decision)
-6. Commit
-7. Update the Redis cache
-8. Publish the event
-9. WebSocket broadcast
-10. Release the lock
-
-Redis appears twice in this list — once as a cheap early filter, once as a cache write after the fact — and neither appearance is where the bid is actually decided. That happens once, in step 5.
+```mermaid
+flowchart TD
+    AuctionEngine["AuctionEngine"]
+    AuctionEngine --> Lock["Redlock<br/>Per-Auction Lock"]
+    AuctionEngine --> Price["Redis Price Cache"]
+    AuctionEngine --> End["Auction End-Time Cache"]
+    AuctionEngine --> Watchers["Watcher Set"]
+    AuctionEngine --> PubSub["Redis Pub/Sub"]
+    PubSub --> WsHandler["WsHandler"]
+    WsHandler --> Clients["Connected Auction Clients"]
+    AuctionEngine --> PG["PostgreSQL Transaction"]
+    PG -->|"Authoritative Commit"| RedisSync["Redis Cache Sync"]
+```
 
 **Redis key schema:**
 
 | Key Pattern | Type | Purpose |
 |---|---|---|
-| `auction:{id}:price` | String | The current highest accepted bid — a fast-path cached value read on every incoming bid as a preliminary optimization, to short-circuit obviously-too-low offers before they spend time on the authoritative path. It is never the final word: because this value can go stale between writes, the bid still has to clear `BidValidator` and the PostgreSQL transaction before it's actually accepted, and on any desync the key is simply overwritten from PostgreSQL rather than trusted as-is. |
-| `auction:{id}:lock` | String (TTL) | The Redlock mutex itself; a bid can only enter its critical section while this key can be successfully acquired. |
-| `auction:{id}:watchers` | Set | The set of user IDs currently subscribed to that auction's live channel. |
-| `auction:{id}:end_time` | String | A cached copy of the auction's end time, checked on every bid and updated in place whenever anti-sniping extends it — avoiding a database round-trip on the single hottest path in the system. |
-| `bid:{auctionId}:events` | Pub/Sub channel | The broadcast channel `WsHandler` subscribes to for pushing price and extension updates out to connected clients. |
+| `auction:{id}:price` | String | Cached current highest accepted bid |
+| `auction:{id}:lock` | String (TTL) | Per-auction Redlock |
+| `auction:{id}:watchers` | Set | Current auction watchers |
+| `auction:{id}:end_time` | String | Cached auction end time |
+| `bid:{auctionId}:events` | Pub/Sub channel | Auction event broadcast |
 
-If a PostgreSQL write ever fails partway through — a constraint violation, a dropped connection, anything — the entire transaction rolls back, the bid is treated as rejected, and nothing is ever published to Redis or broadcast to a client. Redis only ever announces a price that PostgreSQL has already agreed actually happened. That ordering is the whole point: Redis is what makes the platform feel responsive, but PostgreSQL's transaction is what actually decides whether the bid happened at all.
+**Bid critical path:**
 
-The reverse failure — the PostgreSQL commit succeeds, but the Redis update or the broadcast that follows it doesn't — is the one edge case we designed for explicitly, because it's the one place the two stores could actually end up disagreeing. We treat that as a cache desync, not a data problem: PostgreSQL already holds the correct price, so recovery just means re-deriving Redis's cached state from it, never trusting whatever partial write Redis was left with. Before evaluating the next bid on that auction, `AuctionEngine` re-reads the current price straight from PostgreSQL and overwrites the Redis key with it, so a stale or half-written cache entry can never be evaluated against as if it were correct. PostgreSQL serves as the absolute recovery base in this scenario — Redis is rebuilt from it, never the other way around. The same logic covers `auction:{id}:end_time` — it's a cache of a PostgreSQL column, never treated as a value in its own right, so it can always be safely re-synced from the row that actually owns it.
+```mermaid
+flowchart LR
+    Bid["Bid Arrives"]
+    Lock["Acquire Redlock"]
+    Cache["Preliminary Redis Check"]
+    Validate["BidValidator"]
+    PG["PostgreSQL Transaction"]
+    Commit["Commit"]
+    Update["Update Redis"]
+    Publish["Pub/Sub"]
+    Broadcast["WebSocket Broadcast"]
+    Release["Release Lock"]
+    Bid --> Lock
+    Lock --> Cache
+    Cache --> Validate
+    Validate --> PG
+    PG --> Commit
+    Commit --> Update
+    Update --> Publish
+    Publish --> Broadcast
+    Broadcast --> Release
+```
+
+- PostgreSQL remains the authoritative source for accepted state.
+- If PostgreSQL fails before commit, the transaction rolls back and no accepted bid is ever published.
+- If Redis fails or goes stale after PostgreSQL commits, it is treated as a desynchronized cache and rebuilt from PostgreSQL before the next bid is evaluated.
 
 ---
 
 ## 6. Sequence Diagrams
 
-We condensed what used to be eleven separate flows into **8 core flows** — several of the original eleven were really the same underlying mechanism described from different angles, and packing them together made the actual architecture easier to follow, not harder. Each flow below has a one-sentence description of the logic it enforces; the full Mermaid sequence diagram source for each is provided separately.
+Mezyad is documented through eight core end-to-end flows covering identity, appraisal, funding, live bidding, settlement, handover, disputes, and withdrawal.
 
-### Flow 1: User Onboarding & Identity Verification (Nafath/KYC)
-A new user registers, the mock identity service returns a simulated verification result, and only on a successful result is the account fully activated for bidding.
+### Flow 1 — User Onboarding & Identity Verification
 
-### Flow 2: Item Listing & Appraisal Workflow
-A seller submits an item along with supporting documents, and — while an AI-assisted scoring pass is on our roadmap and not part of this release — the listing stays in a pending state until a human evaluator formally approves it as authentic.
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as Frontend
+    participant Auth as AuthController
+    participant KYC as Mock KYC API
+    participant DB as PostgreSQL
+    User->>UI: Register
+    UI->>Auth: POST /auth/register
+    Auth->>KYC: Verify identity
+    KYC-->>Auth: Verification result
+    alt Verification successful
+        Auth->>DB: Create / activate user
+        DB-->>Auth: User created
+        Auth-->>UI: Session token
+        UI-->>User: Account activated
+    else Verification failed
+        Auth-->>UI: Verification rejected
+        UI-->>User: Registration incomplete
+    end
+```
 
-### Flow 3: Open Banking & Escrow Funding Check
-Before a bidder can enter an auction, the mock banking service simulates a liquidity check against the bidder's account, and only on success does `EscrowService` lock the required deposit.
+### Flow 2 — Item Listing & Appraisal Workflow
 
-### Flow 4: Live Bidding Engine ⭐
-This is the flow that does the most work in the system, because manual bidding, proxy bidding, and anti-sniping all funnel through the exact same critical path rather than three separate code paths — there is exactly one bidding pipeline, not three. A bid, whether typed by a bidder or generated automatically by their stored proxy limit, arrives over WebSocket carrying a client-generated `requestId`; `AuctionEngine` first checks that ID against recently processed requests for that bidder (this is the entire idempotency mechanism — bid amount is never used to detect a duplicate), then acquires the Redlock for that specific `auction_id`, runs a fast preliminary Redis price check purely as an early filter, and only then performs the authoritative validation through `BidValidator` and commits the bid to PostgreSQL as the new authoritative state. Only once that write succeeds does it update the cached price in Redis, publish the event, and broadcast it over Pub/Sub to every watcher. If a bid lands inside the anti-sniping window, the same PostgreSQL transaction extends `end_time` before anything is released to Redis, and the extension is synced to Redis and broadcast alongside the price update. If the PostgreSQL write fails for any reason, the bid is rolled back, the lock is released, and nothing is ever broadcast.
+```mermaid
+sequenceDiagram
+    actor Seller
+    participant UI as Frontend
+    participant API as REST API
+    participant DB as PostgreSQL
+    participant Reviewer as Authenticator / Admin
+    Seller->>UI: Submit item
+    UI->>API: Create listing + documents
+    API->>DB: Create item
+    API->>DB: Store media/documents
+    API->>DB: Create appraisal workflow
+    DB-->>API: Pending appraisal
+    Reviewer->>API: Review item
+    API->>DB: Record authenticator review
+    alt Approved
+        API->>DB: Mark appraisal approved
+        API->>DB: Mark item eligible for auction
+        DB-->>API: Approved
+        API-->>UI: Item approved
+    else Rejected
+        API->>DB: Mark appraisal rejected
+        DB-->>API: Rejected
+        API-->>UI: Item rejected
+    end
+```
 
-### Flow 5: Auction Conclusion & Financial Settlement
-A scheduled job closes the auction the instant `end_time` is reached, acquiring the same per-auction Redlock a bid would need — the exact same concurrency protection described in Section 4.1's close-vs-bid race — so a closing job and a last-second bid can never both be evaluated as if the auction were still open. Once closure wins the lock, the auction result is recorded, the winner is determined, `InvoiceService` produces the invoice, and the signed, time-bound handover token is generated — all without any manual step, and with no blockchain or external settlement layer involved.
+### Flow 3 — Open Banking & Escrow Funding Check
 
-### Flow 6: Secure Handover via Cryptographic Dynamic QR
-The buyer and seller meet in person, and a signed, time-bound QR code generated specifically for that auction and its winning bidder is scanned; the scan is checked against that binding and against whether the code has already been used, and only a fresh, valid, first-time scan releases the escrowed funds to the seller.
+```mermaid
+sequenceDiagram
+    actor Bidder
+    participant UI as Frontend
+    participant Escrow as EscrowService
+    participant Bank as Mock Open Banking
+    participant DB as PostgreSQL
+    Bidder->>UI: Request auction participation
+    UI->>Escrow: Check funding
+    Escrow->>Bank: Liquidity check
+    Bank-->>Escrow: Available balance
+    alt Sufficient funds
+        Escrow->>DB: Begin transaction
+        Escrow->>DB: Lock escrow deposit
+        Escrow->>DB: Update wallet balances
+        Escrow->>DB: Record transaction
+        DB-->>Escrow: Commit
+        Escrow-->>UI: Escrow confirmed
+        UI-->>Bidder: Ready to bid
+    else Insufficient funds
+        Escrow-->>UI: Funding rejected
+        UI-->>Bidder: Deposit required
+    end
+```
 
-### Flow 7: Dispute Resolution & Escrow Handling
-A buyer opens a dispute with supporting evidence, the relevant escrow is frozen for the duration of the review, and only a recorded admin decision can trigger either a release to the seller or a refund to the buyer.
+### Flow 4 — Live Bidding Engine ⭐
 
-### Flow 8: Seller Withdrawal Request & Admin Approval
-A seller requests a payout of their available balance; the system first confirms that balance is actually withdrawable — not locked in an open escrow or frozen by an active dispute — before a `withdrawal_request` is created with status `PENDING`. An admin reviews the request: on approval, the payout is executed and the wallet and `transactions` row are updated together inside one PostgreSQL transaction; on rejection, the request moves to `REJECTED` with the reason recorded. Either outcome is logged to `event_store` for audit. No blockchain or external payment rail is involved — the transfer itself is simulated, consistent with the rest of the mock-service boundary.
+```mermaid
+sequenceDiagram
+    actor Bidder
+    participant UI as Frontend
+    participant WS as WsHandler
+    participant Engine as AuctionEngine
+    participant Redis as Redis
+    participant Lock as Redlock
+    participant Validator as BidValidator
+    participant DB as PostgreSQL
+    participant PubSub as Redis Pub/Sub
+    actor Watchers as Other Watchers
+
+    alt Manual bid
+        Bidder->>UI: Place bid
+        UI->>WS: bid:place + requestId
+    else Proxy bid (auto-generated)
+        Engine->>Engine: Detect bidder outbid within proxy limit
+        Engine->>WS: bid:place + requestId (system-originated)
+    end
+
+    WS->>Engine: Process bid
+    Engine->>Engine: Check requestId
+    alt Duplicate requestId
+        Engine-->>WS: Return original result
+        WS-->>UI: Existing bid result
+    else New request
+        Engine->>Lock: Acquire auction lock
+        alt Lock acquired
+            Engine->>Redis: Read cached price (preliminary check only)
+            Redis-->>Engine: Cached price
+            Engine->>Validator: Validate bid
+            Validator->>DB: Read authoritative auction state
+            DB-->>Validator: Current state
+            Validator-->>Engine: Validation result
+            alt Valid bid
+                Engine->>DB: BEGIN transaction
+                Engine->>DB: Insert bid
+                Engine->>DB: Update auction price
+                opt Anti-sniping window
+                    Engine->>DB: Extend end_time
+                    DB-->>Engine: Extension committed
+                end
+                DB-->>Engine: COMMIT
+                Engine->>Redis: Update price / end_time cache
+                opt Redis update fails or is stale
+                    Note over Engine,Redis: PostgreSQL stays authoritative;<br/>cache is rebuilt from PostgreSQL before the next bid
+                end
+                Engine->>PubSub: Publish bid event
+                PubSub-->>WS: Bid accepted event
+                WS-->>Watchers: bid:accepted
+                WS-->>Bidder: bid:accepted
+            else PostgreSQL validation / transaction failure
+                Engine->>DB: ROLLBACK
+                Engine-->>WS: Bid rejected
+                WS-->>Bidder: bid:rejected
+            end
+            Engine->>Lock: Release
+        else Lock unavailable
+            Engine-->>WS: Retry / reject
+            WS-->>Bidder: Bid not processed
+        end
+    end
+```
+
+**Close-vs-bid race** (same Redlock, whichever side wins the lock decides):
+
+```mermaid
+sequenceDiagram
+    participant Bid as Incoming Bid
+    participant Close as Closing Job
+    participant Lock as Redlock
+    participant DB as PostgreSQL
+    par Bid attempts
+        Bid->>Lock: Acquire auction lock
+        Lock-->>Bid: Lock granted / denied
+    and Auction closes
+        Close->>Lock: Acquire auction lock
+        Lock-->>Close: Lock granted / denied
+    end
+    alt Bid acquires lock first
+        Bid->>DB: Validate and commit bid
+        Bid->>Lock: Release
+        Close->>Lock: Acquire lock
+        Close->>DB: Re-check end_time/status
+    else Close acquires lock first
+        Close->>DB: Mark auction closed
+        Close->>Lock: Release
+        Bid->>Lock: Acquire lock
+        Bid->>DB: Re-check auction status
+        DB-->>Bid: Auction closed
+    end
+```
+
+### Flow 5 — Auction Conclusion & Financial Settlement
+
+```mermaid
+sequenceDiagram
+    participant Scheduler as Closing Job
+    participant Lock as Redlock
+    participant Engine as AuctionEngine
+    participant DB as PostgreSQL
+    participant Invoice as InvoiceService
+    participant Handover as Secure Handover
+    Scheduler->>Lock: Acquire auction lock
+    Lock-->>Scheduler: Lock acquired
+    Scheduler->>Engine: Close auction
+    Engine->>DB: Verify auction status/end_time
+    Engine->>DB: Determine winner
+    Engine->>DB: Create auction_result
+    DB-->>Engine: Auction closed
+    Engine->>Invoice: Generate invoice
+    Invoice->>DB: Store invoice
+    DB-->>Invoice: Invoice created
+    Engine->>Handover: Generate time-bound handover token
+    Handover->>DB: Store handover token metadata
+    DB-->>Handover: Token stored
+    Engine->>Lock: Release lock
+```
+
+Uses the same per-auction Redlock as bidding; no blockchain or external settlement layer is involved.
+
+### Flow 6 — Secure Time-Bound QR Handover
+
+```mermaid
+sequenceDiagram
+    actor Buyer
+    actor Seller
+    participant UI as Frontend
+    participant API as Handover API
+    participant DB as PostgreSQL
+    participant Escrow as EscrowService
+    Buyer->>UI: Display handover QR
+    UI->>API: Request valid handover token
+    API->>DB: Retrieve token metadata
+    DB-->>API: Token
+    Buyer->>Seller: Present QR
+    Seller->>UI: Scan QR
+    UI->>API: Verify QR + auction
+    API->>DB: Validate signature
+    API->>DB: Check expiration
+    API->>DB: Check auction + winner binding
+    API->>DB: Check one-time usage
+    alt Valid first scan
+        API->>Escrow: Release escrow
+        Escrow->>DB: Update wallet
+        Escrow->>DB: Record transaction
+        DB-->>Escrow: Commit
+        API->>DB: Mark QR as scanned/released
+        API-->>UI: Handover successful
+        UI-->>Buyer: Release confirmed
+        UI-->>Seller: Funds released
+    else Invalid / expired / already used
+        API-->>UI: Handover rejected
+        UI-->>Buyer: Invalid QR
+    end
+```
+
+### Flow 7 — Dispute Resolution & Escrow Handling
+
+```mermaid
+sequenceDiagram
+    actor Buyer
+    participant UI as Frontend
+    participant Dispute as DisputeService
+    participant DB as PostgreSQL
+    actor Admin
+    participant Escrow as EscrowService
+    Buyer->>UI: Open dispute
+    UI->>Dispute: Create dispute + evidence
+    Dispute->>DB: Create dispute
+    Dispute->>DB: Store dispute messages/evidence
+    Dispute->>DB: Hold related escrow
+    Admin->>Dispute: Review dispute
+    Dispute->>DB: Record admin decision
+    alt Release to seller
+        Dispute->>Escrow: Release funds
+        Escrow->>DB: Update balances
+        Escrow->>DB: Record transaction
+        DB-->>Escrow: Commit
+    else Refund buyer
+        Dispute->>Escrow: Refund buyer
+        Escrow->>DB: Update balances
+        Escrow->>DB: Record transaction
+        DB-->>Escrow: Commit
+    end
+    Dispute->>DB: Record audit event
+```
+
+> Note: `Dispute->>DB: Hold related escrow` assumes there's an actual state or flag in code that blocks `EscrowService` from releasing funds while a dispute is open — this needs to be confirmed against the real implementation, not assumed from the diagram alone.
+
+### Flow 8 — Seller Withdrawal Request & Admin Approval
+
+```mermaid
+sequenceDiagram
+    actor Seller
+    participant UI as Frontend
+    participant API as Withdrawal API
+    participant DB as PostgreSQL
+    actor Admin
+    participant Wallet as Wallet / Withdrawal Service
+    Seller->>UI: Request withdrawal
+    UI->>API: POST /withdrawals
+    API->>DB: Check available balance
+    API->>DB: Check active escrow/disputes
+    alt Withdrawal allowed
+        API->>DB: Create withdrawal_request = PENDING
+        DB-->>API: Request created
+        API-->>UI: Pending approval
+        Admin->>API: Review withdrawal
+        alt Approved
+            API->>Wallet: Execute simulated payout
+            Wallet->>DB: Begin transaction
+            Wallet->>DB: Update wallet
+            Wallet->>DB: Create transaction
+            Wallet->>DB: Mark withdrawal APPROVED
+            Wallet->>DB: Record event_store audit
+            DB-->>Wallet: Commit
+            API-->>UI: Withdrawal approved
+        else Rejected
+            API->>DB: Mark withdrawal REJECTED
+            API->>DB: Record rejection reason
+            API->>DB: Record event_store audit
+            API-->>UI: Withdrawal rejected
+        end
+    else Balance unavailable
+        API-->>UI: Withdrawal rejected
+    end
+```
 
 ---
 
 ## 7. API Specifications
 
-### 7.1 REST vs. WebSocket: A Deliberate Split
+### 7.1 REST vs. WebSocket
 
-Mezyad's API surface follows one consistent rule: **anything transactional is REST, anything time-sensitive is a WebSocket event.** Placing a bid, specifically, is *never* a REST endpoint in this system — it is exclusively a WebSocket event, because the WebSocket connection stays open for the life of the auction, so a bid travels over an already-established channel instead of paying for a fresh HTTP handshake and headers on every single request. That overhead is completely fine for a one-off action like logging in; it's not something worth paying repeatedly on the one path where a competing bidder's request could land in the gap it creates. Reserving REST for actions where that overhead is invisible to the user is what keeps the real-time channel free of unnecessary load.
+Mezyad uses REST for transactional operations and WebSocket events for time-sensitive auction operations.
 
-| Endpoint | Method | Body | Description |
-|---|---|---|---|
-| `/api/v1/auth/register` | POST | `{ name, email, password }` | Creates a new user and triggers the mock KYC verification flow. |
-| `/api/v1/auth/login` | POST | `{ email, password }` | Authenticates a user and issues a session token. |
-| `/api/v1/items` | POST | `{ title, description, categoryId, documents[] }` | Submits a new item listing for appraisal. |
-| `/api/v1/escrow/deposit` | POST | `{ auctionId, amount }` | Runs the mock liquidity check and, on success, locks the required escrow deposit. |
-| `/api/v1/auctions/{id}` | GET | — | Retrieves full auction and item details for the auction page. |
-| `/api/v1/handovers/verify-qr` | POST | `{ qrHash, auctionId }` | Verifies the handover QR code and releases the escrowed funds to the seller. |
-| `/api/v1/withdrawals` | POST | `{ amount, bankAccountId }` | Creates a pending withdrawal request for admin review. |
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/v1/auth/register` | POST | Register user and trigger mock KYC |
+| `/api/v1/auth/login` | POST | Authenticate user |
+| `/api/v1/items` | POST | Create item listing |
+| `/api/v1/escrow/deposit` | POST | Run liquidity check and lock escrow |
+| `/api/v1/auctions/{id}` | GET | Retrieve auction details |
+| `/api/v1/handovers/verify-qr` | POST | Verify handover QR |
+| `/api/v1/withdrawals` | POST | Create withdrawal request |
 
-**WebSocket events** (deliberately kept off the REST surface): `bid:place`, `bid:accepted`, `bid:rejected`, `auction:extended`, `auction:closed`.
+**WebSocket events:**
 
-**Handling retries and duplicate submissions.** A flaky connection is exactly the kind of thing that makes a bidder tap "bid" twice, or makes their client silently retry after a dropped WebSocket frame — and on this path, a duplicate isn't a cosmetic annoyance, it's a second bid and a second escrow check. Every `bid:place` event carries a client-generated `requestId` alongside the auction ID, bidder ID, and amount, and this `requestId` is the sole, authoritative mechanism we use to detect a retry — `AuctionEngine` checks it against a short-lived record of recently processed request IDs for that bidder before doing anything else, and if it's seen that exact `requestId` before, it just returns the original result instead of processing the bid again. We deliberately do **not** fall back to matching on bid amount as a secondary signal: a bidder can legitimately place two genuinely separate bids of the same amount (for example, after being outbid and then outbid again back to the same number), so amount-based matching would risk silently dropping a valid bid rather than catching a duplicate. `requestId` is unambiguous where amount is not, which is exactly why it's the only mechanism this system trusts for idempotency.
+| Event | Purpose |
+|---|---|
+| `bid:place` | Submit a bid |
+| `bid:accepted` | Accepted bid broadcast |
+| `bid:rejected` | Rejected bid response |
+| `auction:extended` | Anti-sniping extension |
+| `auction:closed` | Auction closure event |
+
+**Idempotency:** every `bid:place` event carries a client-generated `requestId`, which is the sole mechanism used to detect duplicate bid submissions. Bid amount is never used as a duplicate identifier, since two legitimate bids may share the same amount.
 
 ### 7.2 Mock External Services
 
-| Service | Simulates | Behavior |
+| Service | Simulates | Purpose |
 |---|---|---|
-| **Mock Nafath API** | National identity verification | Returns a success or failure response after a short, deliberately realistic delay, matching the response structure defined by our internal integration contract for identity verification. |
-| **Mock Open Banking API** | Proof-of-funds / liquidity check | Returns a simulated available balance for a given IBAN, used purely to gate whether an escrow deposit can be locked. |
+| Mock KYC / Nafath API | National identity verification | Simulates identity verification |
+| Mock Open Banking API | Proof of funds / liquidity | Simulates financial verification |
 
-Both mocks were built to the same interface contract a live integration would expose. The engineering value here is entirely in that contract — in the fact that `AuthController` and `EscrowService` are written against an interface, not against a specific implementation, so either mock could be replaced by a real service without touching a single line of business logic downstream.
+Both services follow internal integration contracts so their implementations can later be replaced without changing downstream business logic.
 
 ---
 
 ## 8. SCM and QA Plans
 
-### 8.1 Implementation Tiers & Scope Reality
+### 8.1 Implementation Tiers
 
-Not everything in this document carries the same level of confidence, and we'd rather say that plainly than let the schema imply more than the code delivers. We split what we actually built into two honest tiers:
+**Tier A — Core MVP:** WebSocket bidding, PostgreSQL, Redis, Redlock, escrow, full auction lifecycle, anti-sniping, mock KYC, appraisal workflow, secure QR handover.
 
-* **Tier A — Core MVP (must work, fully wired end to end):** WebSocket bidding, PostgreSQL, Redis, Redlock, escrow locking and release, the full auction lifecycle, anti-sniping extensions, mock KYC verification, the appraisal workflow, and secure QR handover. If any of these were broken, the platform wouldn't be trustworthy — this is the set we tested hardest and are most confident defending line by line.
-* **Tier B — Differentiation (implemented, adds real value on top of the core):** proxy bidding, dispute resolution, withdrawal requests, notification delivery and reconnection handling, admin moderation views, `requestId`-based idempotency, and Redis-to-PostgreSQL reconciliation after a desync.
-
-Anything beyond these two tiers wasn't built for this release, full stop — see the Future Enhancements note at the end of this document for what that includes and why it's out of scope on purpose.
+**Tier B — Differentiation:** proxy bidding, dispute resolution, withdrawal requests, notification delivery and reconnection handling, admin moderation, `requestId` idempotency, Redis/PostgreSQL reconciliation.
 
 ### 8.2 Source Control Management
 
-* **Tool:** GitHub.
-* **Branching strategy:**
-  * `main` — always deployable, protected from direct pushes.
-  * `development` — the active integration branch for ongoing work.
-  * `feature/*` — one branch per unit of work (for example, `feature/redis-locking`, `feature/proxy-bids`), kept short-lived and merged as soon as the feature is stable.
-* **Review policy:** every merge into `development` requires review and approval from at least one other team member, which is what consistently catches the logic errors a single author reading their own code tends to miss.
+- GitHub
+- `main` — stable branch
+- `development` — integration branch
+- `feature/*` — feature branches
+- Pull request review required before merging
 
 ### 8.3 Quality Assurance
 
-* **Unit testing (Jest):** concentrated most heavily on `BidValidator` and `AuctionEngine`, with tests specifically designed to fire concurrent bid submissions at the same auction and verify that the Redlock genuinely prevents more than one bid from ever being accepted as the current highest. This layer also covers the close-vs-bid race directly (closing job vs. last-second bid competing for the same lock), `requestId` idempotency (a repeated request ID returns the original result rather than double-processing), and the PostgreSQL rollback path (a failed write is confirmed to leave no Redis publication and no broadcast behind it).
-* **Manual integration testing:** each of the 8 core flows above is walked through end to end as part of our validation process — registration through mock KYC, escrow locking through the mock liquidity check, live bidding under simulated concurrent load, handover confirmation via QR scan, and the withdrawal request/admin approval path. This layer also includes a deliberate Redis desync test: the Redis cache is corrupted or cleared mid-auction, and we confirm `AuctionEngine` re-syncs it from PostgreSQL before trusting the next bid.
-* **Focus of testing effort:** the overwhelming majority of our testing attention is directed at the live bidding path specifically, because it's the one part of the system where a race condition wouldn't just be a bug — it would be two people believing they'd won the same auction.
+**Unit testing**, focused on `BidValidator` and `AuctionEngine`: bid validation, concurrent bidding, Redlock behavior, close-vs-bid race, `requestId` idempotency, PostgreSQL rollback behavior.
+
+**Integration testing** — all eight flows tested end to end: user onboarding, item appraisal, escrow funding, live bidding, auction settlement, secure handover, dispute resolution, seller withdrawal.
+
+**Failure & recovery testing:** PostgreSQL transaction rollback, Redis cache desynchronization and reconstruction, duplicate request handling, auction closing race, invalid/expired QR, double QR scan prevention, withdrawal rejection.
 
 ---
 
-## Future Enhancements
+## 9. Future Enhancements
 
-Future versions may explore sealed-bid auctions, AI-assisted price estimation, AI concierge capabilities, and blockchain-backed digital ownership. These are intentionally outside the current release scope.
+The following are intentionally outside the current MVP, and may be explored in future versions without affecting the current architecture:
+
+- Sealed-bid auctions
+- AI-assisted price estimation
+- AI concierge
+- Blockchain-backed digital ownership
