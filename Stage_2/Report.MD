@@ -1,102 +1,152 @@
-# Stage 2 Report: Project Charter Development
+# Stage 2 Report: Mezyad — High-Value Asset Auction Platform
 
 ## Executive Summary
 
-This document serves as the formal and comprehensive Project Charter for the High-Value Assets & Investment Opportunities Auction Platform. It establishes the foundational architectural blueprint and project management framework, ensuring an aligned, shared understanding among all cross-functional team members and external evaluating stakeholders.
+This document is the Stage 2 Project Charter for **Mezyad — High-Value Asset Auction Platform**, a web-based auction platform for high-value assets built around a structured transaction lifecycle: Verification → Listing & Review → Auction → Bid Commitment → Auction Closure / Settlement → Handover.
 
-Building upon the ideation, market gap analysis, and architectural decisions finalized in Stage 1, this charter clearly defines the project's core purpose, SMART engineering objectives, team roles, strict scope boundaries, and proactive risk mitigation strategies. It acts as the ultimate reference point and governance document for technical decision-making, resource allocation, and sprint planning throughout the intensive 12-week development lifecycle.
+Stage 1 established why Mezyad was selected: it addresses real trust and commitment problems in high-value online transactions while remaining feasible to build as a graduation MVP. This Project Charter converts that decision into a defined purpose, SMART objectives, stakeholder and role definitions, scope boundaries, a risk register, and a high-level plan for how the project will progress. It establishes what the team is committing to deliver and how the project will be managed, and it sets the stage for Stage 3, where these decisions will be translated into detailed technical documentation.
+
+As established in Stage 1, Mezyad is a graduation MVP/prototype. Identity verification and financial commitment are simulated, there is no real banking or payment integration, and the project makes no production-grade legal, financial, or security guarantees.
 
 ---
 
 ## Task 0: Define Project Objectives
 
 ### Project Purpose & Vision
-The core purpose of this project is to architect and engineer a highly secure, interactive real-time web auction platform exclusively tailored for high-value assets—such as distressed real estate properties, rare limited-edition vehicles, luxury collectibles, and purebred camels.
 
-The regional digital marketplace is currently plagued by a "trust deficit," anonymous fake bids, and massive latency issues during critical auction moments. This project aims to completely eliminate these bottlenecks by enforcing strict identity verification workflows, administrative pre-approvals for all listings, and programmatic financial Escrow deposits. By bridging the gap between traditional high-end auction houses and modern web technologies, the platform will create a reliable, transparent, and highly competitive environment for serious buyers and verified sellers.
+High-value online transactions — such as those involving real estate, vehicles, and other significant assets — are often affected by weak trust mechanisms, uncertain bidder commitment, and unclear transaction continuity between the moment a bid is placed and the moment the asset changes hands. Stage 1 identified this gap as the core problem motivating the project.
+
+The purpose of Mezyad is to provide a structured digital auction workflow for high-value assets that improves clarity, bidder commitment, and transaction continuity from verification through handover. The platform organizes the auction process into clear stages — verification, listing and review, auction, bid commitment, closure and settlement, and handover — so that buyers, sellers, and administrators can follow a transparent and predictable process.
+
+As a graduation MVP, Mezyad simulates identity verification and financial commitment rather than integrating real banking, payment, or legal verification systems. The project does not claim to eliminate fraud or fake bidding, nor does it provide real financial escrow; it demonstrates and structures the mechanisms that a production system would require, within the boundaries of a prototype.
 
 ### SMART Objectives
-To ensure the Minimum Viable Product (MVP) is delivered successfully and meets the highest academic and commercial standards, the team commits to the following Specific, Measurable, Achievable, Relevant, and Time-bound (SMART) objectives:
 
-1. **Real-Time Synchronization & Concurrency (Performance):** Develop and integrate a WebSocket-based real-time bidding engine (utilizing Node.js and Socket.io) that broadcasts price updates, new bid histories, and Anti-Sniper timer extensions to all concurrently connected clients in under 100 milliseconds without requiring manual page reloads. This core engine must be fully operational, stress-tested, and integrated by the end of Week 9.
-2. **Workflow Integrity & Data Validation (Quality):** Implement a strict administrative pre-approval pipeline ensuring that 100% of user-uploaded assets are manually vetted, authenticated, and activated by a designated Admin before appearing on the public auction feed. This ensures zero spam or fraudulent listings and must be completed by Week 7.
-3. **Frontend Optimization & DOM Mastery (Efficiency):** Build a blazing-fast, Single Page Application (SPA)-like user experience relying exclusively on HTML5, CSS3, and Vanilla JavaScript. By explicitly avoiding heavy frameworks (like React or Vue), the team aims to minimize the overall JavaScript bundle size, demonstrate deep mastery of manual DOM manipulation, and achieve a strict Largest Contentful Paint (LCP) metric of <= 2.0 seconds by Week 10.
+**Objective 1 — End-to-End MVP Workflow**
+Deliver a working MVP in which all six defined lifecycle stages — verification, listing and review, auction, bid commitment, auction closure/settlement, and handover — are implemented, integrated, and demonstrated through an end-to-end user scenario by the end of Week 10.
+
+**Objective 2 — Core User Experience / Auction Functionality**
+Deliver the core auction experience with all defined bidding functions operational and demonstrated through representative bidder and seller scenarios by the end of Week 9.
+
+**Objective 3 — Validation and Quality**
+Complete structured testing and validation of the MVP before project closure, covering the core user flows (verification, listing, bidding, closure, handover), key edge cases, and the project risks identified in this charter, with testing completed by the end of Week 12.
 
 ---
 
 ## Task 1: Identify Stakeholders and Team Roles
 
 ### Project Stakeholders
-Understanding stakeholder expectations is critical for project success. The stakeholders are categorized as follows:
 
-* **Internal Stakeholders:** 
-  * The Core Development Team (Abeer, Ghadi, Aseel, Tala): Responsible for the end-to-end architecture, coding, testing, and deployment of the platform.
-* **External Stakeholders:** 
-  * Evaluating Software Engineers (SWEs): The academy instructors evaluating the portfolio project based on code quality, architectural decisions, and Git best practices.
-  * Simulated End-Users: High-Net-Worth Individuals (HNWIs), Real Estate Developers liquidating distressed assets, and Luxury Asset Collectors who demand a flawless, secure, and visually premium user experience.
+**Internal Stakeholders**
+* Abeer Al-Saiari — Project Team Member
+* Ghadi Al-Zahrani — Project Team Member
+* Aseel Al-Zahrani — Project Team Member
+* Tala Al-Hudaibi — Project Team Member
 
-### Team Roles & Responsibilities
-The project operates under a highly collaborative Cross-Functional Agile Team model. All four members serve as Full-Stack Developers, participating actively in database normalization, frontend rendering, and backend logic during the daily 9:00 AM to 2:00 PM on-site core hours.
+**Academic / External Stakeholders**
+* Academy instructors and evaluators, who assess the project against academic requirements and deliverable quality
+* Project mentors or supervisors, where applicable
+* Intended and simulated users of the platform, representing buyers/bidders, sellers, and administrators
 
-To ensure strict accountability, prevent overlapping work, and streamline technical decision-making, primary coordination domains have been distributed as follows:
+### Team Roles and Responsibilities
 
-| Team Member | Primary Coordination Role | Core Responsibilities & Focus Areas |
-| :--- | :--- | :--- |
-| **Abeer Al-Saiari** | Project Manager (PM) & DevOps | Oversees overall agile planning, tracks sprint progress via the Notion Command Center, manages GitHub CI/CD pipelines, enforces code review standards, and ensures strict adherence to the 12-week timeline. |
-| **Ghadi Al-Zahrani** | Database & Architecture Lead | Focuses on designing the PostgreSQL schema (ERD), ensuring ACID transactional integrity for financial data, normalizing tables, and mapping complex Escrow wallet and bid history relationships. |
-| **Aseel Al-Zahrani** | Backend & Real-Time Engine Lead | Coordinates the Node.js/Express server architecture, designs robust REST API endpoints, and implements the highly concurrent WebSocket (Socket.io) bidding logic and the Anti-Sniper time-extension engine. |
-| **Tala Al-Hudaibi** | Frontend UI/UX & Client Logic Lead | Manages HTML5/CSS3 layout architecture, enforces premium "Dark Mode" visual design standards, and handles complex Vanilla JavaScript asynchronous fetches and real-time DOM manipulation. |
+Mezyad is developed by a cross-functional project team. Consistent with Stage 1, there are no permanent technical owners (such as a fixed backend, database, or frontend lead). All four members contribute across research, planning, requirements, design, implementation, testing, documentation, and review, with tasks distributed according to sprint priorities, workload, and blockers rather than fixed specialization.
+
+Where a coordination function is useful for project management, it is treated as a temporary, rotating responsibility rather than permanent ownership.
+
+| Role / Responsibility Area | Responsibility |
+| :--- | :--- |
+| Cross-Functional Team | Shared responsibility for research, planning, implementation, testing, documentation, and review across all four members |
+| Sprint Coordination | Tracks current sprint priorities, blockers, and deadlines; this responsibility may rotate between members as needed |
+| Technical Review | Team members review technical and design decisions collectively before they are adopted |
+| Documentation | Team members collectively maintain requirements, decisions, testing notes, and project documentation |
 
 ---
 
 ## Task 2: Define Scope
 
-To guarantee the delivery of a fully functional, highly polished, and bug-free MVP within the strict academic timeframe, absolute scope boundaries have been established. This prevents "scope creep" and protects the team's capacity for thorough Quality Assurance (QA).
+The scope below is derived directly from the MVP boundaries established in Stage 1 and defines what the project will and will not deliver.
 
-### In-Scope (Core Deliverables & Modules)
-* **Identity & Access Module:** User registration and secure authentication system with strict Role-Based Access Control (RBAC) distinguishing between Bidders, Sellers, and Platform Admins.
-* **Financial Simulation Module (Escrow):** A secure logical pipeline that programmatically locks a virtual security deposit in a simulated wallet before granting a user access to the live bidding room.
-* **The Bidding Engine Module:** An interactive, WebSocket-powered interface featuring live price broadcasts, a dynamic countdown timer, and an immutable table logging the exact timestamp of every bid.
-* **Anti-Sniper Logic:** Automated backend algorithms that instantly extend the auction timer (e.g., +3 minutes) if a bid is placed in the final 60 seconds, preventing last-second sniping and ensuring fairness.
-* **Administrative Moderation Module:** A secure dashboard allowing Admins to review pending seller submissions, approve legitimate assets, or reject non-compliant listings.
-* **Native Web Frontend:** A responsive, premium user interface built purely with HTML5, CSS3, and Vanilla JavaScript to showcase fundamental web engineering mastery.
+### In-Scope
 
-### Out-of-Scope (Explicitly Excluded)
-* **Heavy Frontend Frameworks:** React, Next.js, or Vue are strictly excluded to focus on core DOM manipulation skills and avoid unnecessary dependency overhead.
-* **Live Financial Integrations:** Real banking APIs (e.g., Visa/Mastercard processing) or live payment gateways. Only simulated/test mode logical gateways will be used to demonstrate the Escrow concept without regulatory compliance delays.
-* **Advanced Emerging Technologies:** Artificial Intelligence (AI) estimators, Machine Learning (ML) matchmaking, Chatbots, or Blockchain/Smart Contract asset tokenization.
-* **Mobile Application Development:** Native iOS (Swift) or Android (Kotlin) development is excluded. The focus remains 100% on a responsive web browser experience.
+* User registration and authentication
+* Role-based access for bidders, sellers, and administrators
+* Simulated identity verification
+* Asset submission and listing review
+* Administrative approval or rejection of listings
+* Simulated bidder financial commitment / security deposit
+* Real-time auction bidding and live auction state
+* Bid history
+* Auction timing rules, including anti-sniping behavior at a high level
+* Auction closure and winner determination
+* Basic settlement/invoice flow
+* Controlled handover flow
+* A responsive web interface
+* Testing and validation of the MVP
+* Project documentation required to support the MVP
+
+### Out-of-Scope
+
+* Real banking or payment integrations
+* Real movement of money
+* Production-grade identity verification integrations
+* Production financial escrow
+* Production-grade legal or financial guarantees
+* Native iOS application
+* Native Android application
+* Dependency on physical hardware
+* Advanced AI/ML valuation
+* Blockchain or asset tokenization
+* Chatbots
+* Additional features that are not required for the defined MVP or cannot be accommodated within the project timeframe
 
 ---
 
 ## Task 3: Identify Risks & Mitigation Strategies
 
-Proactive risk management is critical, particularly given the technical complexity of building real-time distributed systems. The team has identified the following primary risks and established concrete mitigation plans:
+### Risk Register
 
-| Identified Risk | Impact Area | Mitigation Strategy & Technical Action Plan |
-| :--- | :--- | :--- |
-| **1. Vanilla JS DOM Complexity** | Technology / Frontend | Managing real-time WebSocket updates with pure JavaScript can quickly lead to disorganized "spaghetti code."<br><br>**Mitigation:** Enforce strict modular JavaScript patterns (e.g., MVC pattern implementation in Vanilla JS), clearly separating UI rendering functions from data-fetching and WebSocket listener logic. |
-| **2. Concurrency & Race Conditions** | Technology / Backend | Multiple users clicking "Bid" in the exact same millisecond could overwrite database values or corrupt the current item price.<br><br>**Mitigation:** Implement strict sequential processing logic, utilizing backend validation and PostgreSQL database-level locks (Row-level locking) to ensure bids are handled chronologically. |
-| **3. Scope Creep on Asset Categories** | Timeline & Database | Designing 5 different relational schemas for diverse assets (cars, real estate, bags, camels) consumes excessive planning time.<br><br>**Mitigation:** Use a unified Items table equipped with a flexible JSONB metadata column to dynamically store and handle varying category-specific attributes efficiently. |
-| **4. Integration & Communication Gaps** | Team Dynamics | Disconnects between frontend HTML structures and backend API payloads during independent off-hours work.<br><br>**Mitigation:** Mandate daily on-site Pair Programming (9 AM - 2 PM), utilize Discord for rapid off-hours syncs, and define strict API JSON payload contracts using Postman/Notion before any backend coding begins. |
-| **5. Server Overload on Demo Day** | Infrastructure | The Node.js server crashing due to too many active WebSocket connections during the live presentation.<br><br>**Mitigation:** Isolate Socket.io events using specific "Rooms" based on the auction_id, ensuring the server only broadcasts price updates to users actively viewing that specific item, drastically reducing network overhead. |
+| Risk | Category | Potential Impact | Risk Level | Mitigation Strategy |
+| :--- | :--- | :--- | :--- | :--- |
+| Concurrent bidding may produce inconsistent auction results if not handled correctly | Concurrency / Data Consistency | Incorrect bid state or unreliable auction results | High | Define bidding rules early, test concurrent bidding scenarios, and validate final auction state through structured integration testing |
+| Real-time updates may not reach all participants consistently | Real-Time Synchronization | Bidders see outdated prices or miss auction closure | Medium | Test real-time update delivery under realistic conditions and define fallback behavior for delayed or dropped updates |
+| The project may expand beyond the defined MVP boundaries | Scope Creep | Reduced ability to complete core features on schedule | Medium | Maintain the defined in-scope/out-of-scope boundaries and review scope at each sprint checkpoint |
+| Development may fall behind the planned schedule | Timeline Pressure | Incomplete MVP features by the demo date | Medium | Track sprint progress regularly and reprioritize remaining tasks against the timeline |
+| Auction, verification, and settlement components may not integrate smoothly | Integration Between Components | Broken or inconsistent workflow across the transaction lifecycle | Medium | Define clear interfaces between components early and test integration points throughout development, not only at the end |
+| Coordination gaps may occur when responsibilities shift between team members across sprints | Team Coordination / Communication | Duplicated work or missed dependencies | Medium | Use regular sprint check-ins and shared documentation to track ownership of current tasks |
+| The system may behave unreliably under live demo conditions | Testing / Demo Reliability | Failed or unconvincing live demonstration | Medium | Rehearse the demo scenario in advance and validate the core workflow under conditions similar to the presentation |
+| Overall technical complexity of a multi-stage, real-time workflow | Technical Complexity | Delays across multiple project areas | Medium | Break the workflow into smaller, testable components and validate each stage before integrating the next |
 
 ---
 
 ## Task 4: Develop a High-Level Plan
 
-The following high-level project timeline maps out the major phases leading up to the final Demo Day. It ensures steady, measurable progression through all architectural, developmental, and testing stages across the 12-week lifecycle.
+### Project Timeline
 
-| Project Phase | Focus Area | Timeline | Key Milestones & Deliverable Outcomes |
+| Stage | Focus | Timeline | Key Deliverables |
 | :--- | :--- | :--- | :--- |
-| **Stage 1** | Idea Development | Week 1 | Team formation, extensive brainstorming, SCAMPER idea evaluation, and final MVP project selection. (Completed) |
-| **Stage 2** | Project Charter | Weeks 2-3 | Definition of strict scope, SMART objectives, stakeholder roles, risk analysis, and high-level timeline mapping. (Current) |
-| **Stage 3** | Technical Documentation | Weeks 4-5 | Finalization of Database ERD, System Architecture Diagrams, User Journeys, and REST API Specifications. |
-| **Stage 4 (Part A)** | Core UI & Database Setup | Weeks 6-7 | Implementation of HTML/CSS layouts, building PostgreSQL schemas, and completing the user authentication flows. |
-| **Stage 4 (Part B)** | Logic & Real-Time Engine | Weeks 8-9 | Development of backend REST APIs, WebSocket (Socket.io) integration, Escrow simulation, and Anti-Sniper logic. |
-| **Stage 4 (Part C)** | System Integration | Week 10 | Connecting the Vanilla JS frontend to the Node.js backend, ensuring seamless data flow across all user roles. |
-| **Stage 5** | Project Closure & QA | Weeks 11-12 | End-to-end manual integration testing, bug fixing, deployment containerization, final presentation preparation, and Demo Day execution. |
+| Stage 1 — Idea Development | Team formation, brainstorming, research, evaluation, and MVP selection | Week 1 | Selected concept: Mezyad (Completed) |
+| Stage 2 — Project Charter Development | Purpose, SMART objectives, stakeholders, roles, scope, risks, and project timeline | Weeks 2–3 | Project Charter (Current) |
+| Stage 3 — Technical Documentation | Requirements, user stories, UI/UX planning, system architecture, database design, API planning, testing strategy | Weeks 4–5 | Technical documentation set |
+| Stage 4 — MVP Development | Implementation, integration, and refinement of the defined MVP | Weeks 6–10 | Functional MVP covering the full transaction lifecycle |
+| Stage 5 — Project Closure | Final testing, bug fixing, deployment preparation, documentation completion, final presentation, and reflection | Weeks 11–12 | Tested MVP, final documentation, and presentation |
+
+### Major Milestones
+
+* End of Week 3 — Project Charter completed and shared
+* End of Week 5 — Technical documentation completed
+* End of Week 9 — Core auction functionality complete (Objective 2)
+* End of Week 10 — Full MVP workflow integrated (Objective 1)
+* End of Week 12 — Testing and validation complete, MVP ready for final presentation (Objective 3)
 
 ---
-**Document Status:** Approved & Finalized  
-**Project Team:** Abeer Al-Saiari, Ghadi Al-Zahrani, Aseel Al-Zahrani, Tala Al-Hudaibi
+
+## Task 5: Project Charter Completion
+
+This Project Charter consolidates the project purpose, three SMART objectives, project stakeholders, team responsibilities, in-scope and out-of-scope boundaries, a risk register with mitigation strategies, and a high-level project plan. Together, these elements define what the Mezyad team is committing to deliver and how the project will be managed through to completion.
+
+**Document Status:** Stage 2 Project Charter — Final Draft
+
+### Transition to Stage 3
+
+Stage 1 established the direction of the project by identifying the problem and selecting Mezyad as the concept to pursue. Stage 2 has now established the project charter: the purpose, objectives, stakeholders, scope, risks, and management boundaries that will guide the work ahead. Stage 3 will build on these approved product-level decisions by developing the detailed technical documentation — requirements, user stories, UI/UX planning, system architecture, database design, and testing strategy — needed to implement the MVP defined here.
