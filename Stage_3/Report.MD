@@ -867,6 +867,8 @@ sequenceDiagram
 
 Mezyad uses REST for transactional operations and WebSocket events for time-sensitive auction operations.
 
+All REST request and response bodies use `application/json`. Except for registration and login, REST requests require `Authorization: Bearer <accessToken>`. Monetary values in the examples are test values only; no endpoint transfers real money or connects to a live bank account.
+
 | Endpoint | Method | Description |
 |---|---|---|
 | `/api/v1/auth/register` | POST | Register user and trigger mock KYC |
@@ -876,6 +878,226 @@ Mezyad uses REST for transactional operations and WebSocket events for time-sens
 | `/api/v1/auctions/{id}` | GET | Retrieve auction details |
 | `/api/v1/handovers/verify-qr` | POST | Verify handover QR |
 | `/api/v1/withdrawals` | POST | Create withdrawal request |
+
+### REST Request and Response Contracts
+
+#### `POST /api/v1/auth/register`
+
+Registers a bidder or seller and sends the supplied test identity reference to the Mock KYC service.
+
+**Request body**
+
+```json
+{
+  "name": "Aseel Alzhrani",
+  "email": "aseel@example.test",
+  "password": "ExamplePassword123!",
+  "role": "BIDDER",
+  "identityReference": "TEST-KYC-001"
+}
+```
+
+**Success — `201 Created`**
+
+```json
+{
+  "data": {
+    "userId": "1f0d2fd7-4a7a-4d0e-9f73-7a1cbfce9e01",
+    "email": "aseel@example.test",
+    "role": "BIDDER",
+    "kycStatus": "VERIFIED",
+    "accessToken": "mock-session-token"
+  }
+}
+```
+
+**Errors:** `400 Bad Request` for missing or invalid fields, `409 Conflict` when the email is already registered, and `422 Unprocessable Entity` when mock identity verification is rejected.
+
+#### `POST /api/v1/auth/login`
+
+Authenticates an existing user and creates a session.
+
+**Request body**
+
+```json
+{
+  "email": "aseel@example.test",
+  "password": "ExamplePassword123!"
+}
+```
+
+**Success — `200 OK`**
+
+```json
+{
+  "data": {
+    "accessToken": "mock-session-token",
+    "user": {
+      "id": "1f0d2fd7-4a7a-4d0e-9f73-7a1cbfce9e01",
+      "name": "Aseel Alzhrani",
+      "role": "BIDDER"
+    }
+  }
+}
+```
+
+**Errors:** `400 Bad Request` for incomplete credentials and `401 Unauthorized` for an invalid email or password.
+
+#### `POST /api/v1/items`
+
+Creates a seller's listing in `PENDING_REVIEW` status. The listing is not publicly available until an administrator approves it.
+
+**Request body**
+
+```json
+{
+  "title": "2020 Classic Vehicle",
+  "categoryId": "vehicles",
+  "description": "A documented sample asset for the MVP.",
+  "startingPrice": 100000,
+  "startTime": "2026-10-10T14:00:00Z",
+  "endTime": "2026-10-10T15:00:00Z",
+  "visibility": "PUBLIC",
+  "categoryFields": {
+    "make": "Example",
+    "model": "Classic",
+    "year": 2020,
+    "condition": "Good"
+  },
+  "mediaUrls": ["https://example.test/media/vehicle-1.jpg"],
+  "documentUrls": ["https://example.test/documents/inspection.pdf"]
+}
+```
+
+**Success — `201 Created`**
+
+```json
+{
+  "data": {
+    "itemId": "a4bd8897-bb70-438a-9c0e-c099db80fb71",
+    "status": "PENDING_REVIEW",
+    "message": "Listing submitted for administrator review."
+  }
+}
+```
+
+**Errors:** `400 Bad Request` for invalid listing data, `401 Unauthorized` for a missing or invalid session, and `403 Forbidden` when the user is not a seller.
+
+#### `POST /api/v1/escrow/deposit`
+
+Runs the test funding check and records a simulated locked deposit before the bidder enters an auction. It never charges a card, transfers funds, or uses a live bank account.
+
+**Request body**
+
+```json
+{
+  "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+  "amount": 5000,
+  "testAccountReference": "TEST-ACCOUNT-001"
+}
+```
+
+**Success — `200 OK`**
+
+```json
+{
+  "data": {
+    "depositId": "76092c5a-7b55-4d87-9914-78f5c41fa7df",
+    "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+    "status": "LOCKED_SIMULATED",
+    "amount": 5000
+  }
+}
+```
+
+**Errors:** `400 Bad Request` for an invalid amount or auction ID, `401 Unauthorized` for a missing session, `403 Forbidden` when the bidder is not eligible for the auction, and `422 Unprocessable Entity` when the mock funding check fails.
+
+#### `GET /api/v1/auctions/{id}`
+
+Returns the current state required to render an auction page. `{id}` is the auction UUID in the URL path; the request has no JSON body.
+
+**Success — `200 OK`**
+
+```json
+{
+  "data": {
+    "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+    "status": "ACTIVE",
+    "startingPrice": 100000,
+    "currentPrice": 125000,
+    "endTime": "2026-10-10T15:00:00Z",
+    "antiSnipingSeconds": 60,
+    "item": {
+      "id": "a4bd8897-bb70-438a-9c0e-c099db80fb71",
+      "title": "2020 Classic Vehicle",
+      "category": "vehicles"
+    },
+    "recentBids": [
+      {
+        "amount": 125000,
+        "bidderDisplayName": "A***X",
+        "createdAt": "2026-10-10T14:42:00Z"
+      }
+    ]
+  }
+}
+```
+
+**Errors:** `401 Unauthorized` for a missing session, `403 Forbidden` when the user does not have access to a private auction, and `404 Not Found` when the auction does not exist.
+
+#### `POST /api/v1/handovers/verify-qr`
+
+Verifies a one-time, time-bound test QR token for the simulated handover workflow.
+
+**Request body**
+
+```json
+{
+  "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+  "qrToken": "mock-qr-token"
+}
+```
+
+**Success — `200 OK`**
+
+```json
+{
+  "data": {
+    "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+    "handoverStatus": "VERIFIED_SIMULATED",
+    "message": "The simulated handover was recorded."
+  }
+}
+```
+
+**Errors:** `400 Bad Request` for a malformed request, `401 Unauthorized` for a missing session, `403 Forbidden` for a user who is not part of the auction, and `422 Unprocessable Entity` for an invalid, expired, or already used token.
+
+#### `POST /api/v1/withdrawals`
+
+Creates a simulated seller withdrawal request for administrator review. No real payout is executed.
+
+**Request body**
+
+```json
+{
+  "amount": 125000,
+  "testBankAccountReference": "TEST-IBAN-001"
+}
+```
+
+**Success — `201 Created`**
+
+```json
+{
+  "data": {
+    "withdrawalId": "ae525ac1-4d70-4c4e-a8f3-bc84bc8dd52d",
+    "status": "PENDING_ADMIN_REVIEW",
+    "amount": 125000
+  }
+}
+```
+
+**Errors:** `400 Bad Request` for invalid data, `401 Unauthorized` for a missing session, `403 Forbidden` when the user is not a seller, and `422 Unprocessable Entity` when the simulated available balance is insufficient.
 
 **WebSocket events:**
 
@@ -889,6 +1111,71 @@ Mezyad uses REST for transactional operations and WebSocket events for time-sens
 
 **Idempotency:** every `bid:place` event carries a client-generated `requestId`, which is the sole mechanism used to detect duplicate bid submissions. Bid amount is never used as a duplicate identifier, since two legitimate bids may share the same amount.
 
+### WebSocket Event Contracts
+
+All clients join an authenticated auction room before receiving its updates. `bid:place` is emitted by the bidder; the remaining events are emitted by the server.
+
+#### `bid:place`
+
+```json
+{
+  "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+  "amount": 125000,
+  "requestId": "8d021338-1d84-4b4e-905f-38fd2d95c0de"
+}
+```
+
+#### `bid:accepted`
+
+```json
+{
+  "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+  "requestId": "8d021338-1d84-4b4e-905f-38fd2d95c0de",
+  "bid": {
+    "id": "a2d57b31-0093-4d85-a91a-ed4b5a6dc914",
+    "amount": 125000,
+    "bidderDisplayName": "A***X",
+    "createdAt": "2026-10-10T14:42:00Z"
+  },
+  "currentPrice": 125000,
+  "endTime": "2026-10-10T15:00:00Z"
+}
+```
+
+#### `bid:rejected`
+
+```json
+{
+  "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+  "requestId": "8d021338-1d84-4b4e-905f-38fd2d95c0de",
+  "code": "BID_TOO_LOW",
+  "message": "The current price has changed. Submit a higher bid.",
+  "currentPrice": 125000
+}
+```
+
+#### `auction:extended`
+
+```json
+{
+  "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+  "previousEndTime": "2026-10-10T15:00:00Z",
+  "newEndTime": "2026-10-10T15:03:00Z",
+  "reason": "ANTI_SNIPING"
+}
+```
+
+#### `auction:closed`
+
+```json
+{
+  "auctionId": "e8c8e867-b9d4-46e3-829d-00b8274efc9f",
+  "status": "CLOSED",
+  "winningBid": 125000,
+  "closedAt": "2026-10-10T15:03:00Z"
+}
+```
+
 ### 7.2 Mock External Services
 
 | Service | Simulates | Purpose |
@@ -896,7 +1183,12 @@ Mezyad uses REST for transactional operations and WebSocket events for time-sens
 | Mock KYC / Nafath API | National identity verification | Simulates identity verification |
 | Mock Open Banking API | Proof of funds / liquidity | Simulates financial verification |
 
-Both services follow internal integration contracts so their implementations can later be replaced without changing downstream business logic.
+Both services use test data only and follow internal integration contracts so their implementations can later be replaced without changing downstream business logic. They are not live Nafath or bank integrations.
+
+| Mock service | Input contract | Success output | Failure output |
+|---|---|---|---|
+| Mock KYC | `identityReference` | `{ "status": "VERIFIED", "verificationId": "mock-kyc-id" }` | `{ "status": "REJECTED", "reason": "TEST_IDENTITY_NOT_VERIFIED" }` |
+| Mock Open Banking | `testAccountReference`, `requiredAmount` | `{ "eligible": true, "reference": "mock-funds-id" }` | `{ "eligible": false, "reason": "TEST_FUNDS_INSUFFICIENT" }` |
 
 ---
 
