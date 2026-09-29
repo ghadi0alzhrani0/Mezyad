@@ -113,15 +113,6 @@ This task separates two groups. **Product users and beneficiaries** are the peop
 
 **Why their role is needed.** High-value assets should not become auctions automatically on submission. The administrator's decision keeps published auctions inside a defined workflow and gives the platform a controlled publishing step. The AI Listing Assistant does not replace this role, because it only produces suggestions and every listing is still reviewed by an administrator.
 
-### Project Stakeholders
-
-Project stakeholders are not users of the platform. They are the groups who create, evaluate, or guide the project. Their interest is in whether the project is delivered, meets its requirements, and stays within its agreed scope.
-
-| Stakeholder | Why they are a stakeholder | Relationship to the project | What they need or expect |
-| :--- | :--- | :--- | :--- |
-| **Project Team** (Abeer, Ghadi, Aseel, Tala) | The project's outcome depends directly on the team's work and on its ability to deliver within 12 weeks | Plans, designs, builds, tests, and documents the MVP | A clearly defined, achievable scope; clear responsibilities; and a realistic schedule |
-| **Academy Instructors / Evaluators** | They assess the project against the academic requirements of each stage | Review the deliverables at each stage and evaluate the final MVP | A measurable, well-scoped, technically meaningful, and demonstrable project, documented consistently across stages |
-| **Project Supervisor / Mentor** | Provides project guidance and ensures required project constraints and integrations are addressed | Guides the team's decisions and confirms that required constraints, such as the Saudi bank API integration, are handled | Evidence that required constraints are included in the scope and progressing, and that the project stays focused and realistic |
 
 ### Team Responsibilities
 
