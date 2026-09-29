@@ -58,12 +58,12 @@ By the end of Week 10, demonstrate the complete approved MVP workflow across bot
 By the end of Week 9, implement and demonstrate validated bid submission, bid history, live auction updates, auction timing, and anti-sniping.
 
 * *What is delivered:* the core auction functionality, working before the remaining features are integrated.
-* *Why Week 9:* completing the core one week before the full MVP leaves Week 10 for commitment, bank API integration, AI listing assistance, closure, and winner determination, and gives early warning if the auction logic needs rework.
+* *Why Week 9:* completing the core one week before the full MVP leaves Week 10 for commitment, bank API integration, Smart Auction Assistant, closure, and winner determination, and gives early warning if the auction logic needs rework.
 * *Measure:* with at least two users bidding on the same auction, valid bids are accepted and invalid bids are rejected, all users see updates live, and a valid bid placed in the final period extends the end time.
 
 **Objective 3 — Validation**
 
-By the end of Week 12, complete structured testing and validation covering authentication, listing creation, admin approval, public and private access, commitment, bank API integration, real-time bidding, anti-sniping, auction closure, winner determination, AI listing assistance, and relevant edge cases.
+By the end of Week 12, complete structured testing and validation covering authentication, listing creation, admin approval, public and private access, commitment, bank API integration, real-time bidding, anti-sniping, auction closure, winner determination, Smart Auction Assistant, and relevant edge cases.
 
 * *What is delivered:* a tested MVP with documented test results.
 * *Why Week 12:* testing follows implementation, so Weeks 11–12 are reserved for it, together with bug fixing and final documentation.
@@ -109,7 +109,7 @@ Mezyad has three product users: bidders/buyers, sellers, and administrators. Eac
 * The private access code for private auctions, which the seller provides to participants outside the platform.
 * Admin review, meaning submission of the listing for approval or rejection.
 * The listing status view, and later the auction result.
-* The Smart Auction Assistant's seller-side functions: listing title suggestion, listing completeness suggestions, and description assistance (generating or improving the description). The seller remains responsible for the information and the final content.
+* The Smart Auction Assistant's seller-side functions: listing title suggestion and listing completeness suggestions. The seller remains responsible for the information and the final content.
 
 **Why their role is needed.** Sellers are the source of the asset information, so the clarity of an auction depends on the quality of the data they enter. Structured fields and the assistant's suggestions help them present the asset clearly, and Admin Review gives them a defined route to publication.
 
@@ -137,7 +137,6 @@ The Smart Auction Assistant is a lightweight feature designed to improve the usa
 **Seller-side assistance**
 * **Listing Title Suggestion:** generates a clear auction title based on the asset information provided by the seller.
 * **Listing Completeness Suggestions:** identifies missing or incomplete listing information and suggests details that the seller may want to add.
-* **Description assistance:** generates or improves the listing description from the information the seller provided.
 * **Auction Activity Summary:** provides a concise summary of auction activity, including the number of bidders, the number of bids, and overall bidding activity.
 * **Bidding Activity Insights:** displays basic activity patterns, such as periods with increased bidding activity and the number of bids received during different periods of the auction.
 * **Auction Summary:** gives bidders a quick overview of the current auction state, including the current highest bid, number of bids, remaining time, and recent activity.
