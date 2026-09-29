@@ -22,7 +22,7 @@ This charter defines the purpose, objectives, stakeholders, team responsibilitie
 
 ### Project Purpose
 
-Mezyad provides a focused auction experience for high-value assets. Its purpose rests on five elements. Each addresses a specific need of high-value online auctions, and each belongs in the MVP because it directly supports the auction workflow.
+Mezyad provides a focused auction experience for high-value assets. Its purpose rests on six elements. Each addresses a specific need of high-value online auctions, and each belongs in the MVP because it directly supports the auction workflow.
 
 **1. Clear asset information.** High-value assets require clear and structured information because bidders need to understand what they are considering before participating in an auction. Sellers provide category-specific details, such as make, model, year, mileage, and condition for vehicles, or property type, area, location, bedrooms, and condition for real estate. Structuring the information makes listings easier to understand and gives bidders consistent details to review before placing a bid. Administrators review submitted listings before they become available as auctions. This is part of the MVP because a reliable auction depends on bidders having sufficient and organized information about the asset.
 
