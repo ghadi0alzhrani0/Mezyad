@@ -191,7 +191,7 @@ Docker is used to maintain a consistent development environment across team memb
 
 ## Task 2: Define Scope
 
-Scope control is one of the main purposes of this charter. Every item below directly supports the defined Mezyad auction workflow, and anything that does not is excluded.
+The scope defines what Mezyad will deliver and what it will not. Every item below directly supports the defined auction workflow, and anything that does not is excluded. The scope is described at a high level: it states what the system will do, while how it will be built is left to Stage 3.
 
 ### In Scope
 
@@ -201,11 +201,11 @@ Authentication in Mezyad consists of registration, login, and role-based access.
 
 There are three roles:
 
-* **Bidder / Buyer:** can browse public auctions, access private auctions with the correct code, complete the commitment step, and place bids.
-* **Seller:** can create listings, use the AI Listing Assistant, choose public or private access, submit listings for approval, and view the results of their auctions.
-* **Administrator:** can review submitted listings and approve or reject them, and can monitor auction status where necessary.
+* **Bidder / Buyer:** accesses public auctions, accesses private auctions with the correct code, completes the commitment step, and places bids.
+* **Seller:** creates listings, chooses public or private access, submits listings for approval, and views the results of their auctions.
+* **Administrator:** reviews submitted listings and approves or rejects them, and monitors auction status where necessary.
 
-Authentication is needed so that listings, commitments, and bids are linked to the correct user. Role-based access is needed so that each user reaches only the functions allowed for their role: only sellers create listings, only administrators approve them, and only bidders who have access to an auction can bid in it.
+Authentication ensures that listings, commitments, and bids are linked to the correct user. Role-based access ensures that each user reaches only the functions allowed for their role.
 
 **Seller Listings and Structured Asset Information**
 
@@ -213,58 +213,60 @@ Sellers create listings with a title, category, description, images, starting pr
 
 **Admin Review**
 
-Administrators review submitted listings and approve or reject them. Only approved listings can proceed to auction. A submitted listing should not automatically become an auction, especially for high-value assets, so this step gives the platform a controlled publishing workflow. The review itself is kept simple: approve or reject.
+Sellers submit listings for review, and administrators approve or reject them. Only approved listings can proceed to auction. A submitted listing should not automatically become an auction, especially for high-value assets, so this step gives the platform a controlled publishing workflow. The review is kept simple: approve or reject.
 
 **Public and Private Auctions**
 
-A public auction appears in the public auction list, and authenticated users can access it and bid. A private auction does not appear in the public list. It is accessed through a private access code that the seller provides to participants outside the platform. An authenticated user must enter the correct code to access the auction and bid.
+A public auction appears in the public auction list, and authenticated users can access it and bid. A private auction does not appear in the public list. It is accessed through a private access code that the seller provides to participants outside the platform. An authenticated user must provide the correct code to access the auction, and only authorized participants can bid.
 
-Private auctions give the seller a simple way to keep an auction out of the public list. The MVP implements this through a private access code rather than an invitation-management system, which keeps participation control within the project's time and complexity limits. The MVP implements only Private Auction → Private Access Code → Authorized Participant Access.
+The MVP implements this through a private access code rather than an invitation-management system, which keeps participation control within the project's time and complexity limits. The MVP implements only Private Auction → Private Access Code → Authorized Participant Access.
 
 **Bid Commitment**
 
-Bid Commitment is a step the bidder must complete before bidding. It works as a controlled participation checkpoint: it links the required bidder commitment step to the auction workflow so that bidders enter the live auction through a defined step. It does not hold, transfer, or represent a financial deposit. It is simply a required participation step before bidding and is not escrow, custody, payment, or settlement. It is intentionally limited so that the auction workflow remains the focus of the project. The exact implementation stays within what the selected bank sandbox supports.
+Bid Commitment is a required participation step that a bidder completes before bidding. It works as a controlled participation checkpoint within the auction workflow. It is not a financial deposit, escrow, custody, payment, settlement, or money transfer. It is intentionally limited so that the auction workflow remains the focus of the project. The exact implementation depends on what the selected bank sandbox supports, and Mezyad will not claim to verify funds, creditworthiness, or financial eligibility unless the selected API explicitly supports such an operation.
 
 **Saudi Open Banking Sandbox Integration**
 
-Mezyad will integrate with an official Saudi Open Banking sandbox/testing environment as part of the bidder commitment flow. The integration will use test/sandbox data rather than live customer financial data. The exact API operation will be selected during Stage 3 based on the approved provider's documentation, available access, and the operation required by the commitment workflow. The bank integration will be used only for the specific account or banking interaction supported by the approved sandbox and required for the Mezyad commitment flow.
+Mezyad will integrate with an official Saudi Open Banking sandbox/testing environment as part of the bidder commitment flow. This is a required project constraint. The integration uses test/sandbox data only: no live customer financial data is used, no real money moves, and no production banking access is claimed.
 
-* *Why the integration is required:* it is a required project constraint, and it connects the commitment step to a real Saudi bank API rather than to a purely internal mechanism.
-* *Why a sandbox:* the selected provider's official sandbox provides a non-production environment for developing and testing the required Open Banking integration, so the team can develop and test without production access. The details of the selected provider's sandbox will be confirmed against its official documentation in Stage 3.
-* *Why test data:* no live customer information is involved and no real money moves.
-* *What remains undecided until Stage 3:* the specific API operation. It depends on the provider's documentation and the access the team is granted, so it is not fixed here.
-* *Role in the workflow:* the integration provides the required banking interaction within the bidder commitment process. The exact role of the bank response will be defined after the selected API operation is confirmed in Stage 3. It is not a payment processor and not a banking application, and Mezyad will not claim to verify funds, creditworthiness, or financial eligibility unless the selected API explicitly supports it.
-* *Provider candidates:* the primary candidate is the SABB Open Banking Developer Sandbox, and the backup candidate is the Al Rajhi Bank Developer Portal / Sandbox. Sandbox access has not yet been obtained.
+* *Role in the workflow:* the integration supports the bidder commitment workflow. It is not a payment processor, not a banking application, and not escrow or settlement.
+* *Provider candidates:* the primary candidate is the SABB Open Banking Developer Sandbox, and the backup candidate is the Al Rajhi Bank Developer Portal / Sandbox.
+* *Access status:* sandbox access has not yet been obtained.
+* *Decided in Stage 3:* the exact API operation will be selected after reviewing the provider's documentation and the access the team is granted.
 
 **Real-Time Bidding**
 
-The auction supports bid submission, server-side bid validation, the current highest bid, bid history, an auction timer, start and end rules, live auction state, and real-time updates to participants. The server is authoritative: it validates every bid, rejects invalid bids, maintains the current highest bid and bid history, controls the auction timer, and controls bid processing so that concurrent bids are handled consistently. In an auction, the outcome depends on which bids are valid and the order in which they arrive, so the decision cannot be left to the user's browser. Real-time updates matter because bidders act on the current price, and an outdated price could lead them to bid on wrong information. This is the core of the platform and receives the majority of implementation effort.
+The auction supports bid submission, bid validation, the current highest bid, bid history, an auction timer, auction start and end rules, live auction state, real-time updates to participants, and consistent handling of concurrent bids. The server is authoritative for auction state and bid validation, so the client cannot decide auction outcomes. This is a core part of the platform and therefore receives significant implementation and testing effort.
 
 **Anti-Sniping**
 
-Anti-sniping addresses last-second bidding, where a bid arrives so close to the closing time that other bidders have little or no chance to respond. If a valid bid is received during the defined final period, the auction end time is automatically extended. In Mezyad, it gives active bidders additional time to respond to bids received near the scheduled closing time. The exact threshold and extension duration are left to the Stage 3 technical design, where they will be defined together with the other auction timing rules.
+If a valid bid is received during the defined final period of an auction, the auction end time is automatically extended. Its purpose is to give active bidders additional time to respond to bids received near the scheduled closing time. The exact threshold and extension duration will be defined in Stage 3.
 
 **Auction Closure and Winner Determination**
 
-When an auction reaches its final valid end time, bidding stops, the winner is determined from the valid bids, the auction status changes to closed, and the result is recorded and displayed. The winner is calculated only after bidding has stopped and only from valid bids, which gives each auction a clear result. The workflow ends at the auction result and includes no payment, settlement, or later steps.
+When an auction reaches its final valid end time, bidding stops, the winner is determined from the valid bids, the auction status changes to closed, and the result is recorded and displayed. The workflow ends at the auction result and includes no payment, settlement, or later steps.
 
-**AI Listing Assistant**
+**Smart Auction Assistant**
 
-The AI Listing Assistant is one lightweight capability inside listing creation, not a separate AI project. It provides three functions:
+The Smart Auction Assistant is a lightweight feature that improves the usability of Mezyad for both sellers and bidders. It provides simple assistance with listing creation, auction discovery, and understanding auction activity, without making financial or bidding decisions. It is not a separate AI project. It works from information already available within the platform and is limited to six simple, practical functions.
 
-1. **Suggest a listing title** based on the entered asset information.
-2. **Generate or improve the listing description** from the structured asset information.
-3. **Suggest missing information** to improve listing completeness.
+*Seller-side*
+1. **Listing Title Suggestion:** suggests a clear auction title based on the asset information the seller provided.
+2. **Listing Completeness Suggestions:** identifies missing or incomplete listing information and suggests details the seller may want to add.
 
-Sellers may have the asset details but not know how to present them clearly, and listing quality affects how well bidders understand the asset. The three functions cover the main listing-writing needs (title, description, and completeness) and all work from information the seller has already provided. The assistant stays lightweight because it only produces suggestions during listing creation and has no role after submission.
+*Bidder-side*
+3. **Search Assistance:** helps bidders find relevant public auctions using simple queries based on factors such as asset type, category, location, or price range.
+4. **Auction Activity Summary:** summarizes auction activity, such as the number of bidders and bids.
+5. **Bidding Activity Insights:** shows basic activity patterns, such as periods of increased bidding.
+6. **Auction Summary:** gives a quick overview of the current auction state, such as the current highest bid, number of bids, remaining time, and recent activity.
 
-The seller provides the underlying information and remains responsible for the final content, and the administrator still reviews every listing. AI is not used for pricing or bidding decisions, because that would turn the project into a valuation or prediction system outside the auction workflow. The assistant does not determine prices, appraise assets, predict winners, make bidding or financial decisions, approve listings, or act as a chatbot.
+Users remain responsible for their own content and decisions, and the administrator still reviews every listing. The implementation approach will be decided in Stage 3. The assistant does not determine asset value, predict prices, recommend bid amounts, predict winners, make financial decisions, approve or reject listings, replace administrators, or act as a chatbot.
 
 **Quality**
 
-The MVP includes a responsive web interface, structured testing and validation, and the documentation required to support the project.
+The MVP includes a responsive web interface, structured testing and validation, and the project documentation required for the project. The testing strategy is defined in Stage 3.
 
-**Overall scope boundary.** The in-scope items form a single chain: a listing is created and reviewed, an auction is opened publicly or privately, bidders commit and bid in real time, and the auction closes with a recorded winner and result. Nothing in scope exists outside that chain.
+**Overall scope boundary.** The in-scope items form one connected workflow: listing creation, review, public or private auction, bidder commitment, real-time bidding, auction closure, and the winner and result. Nothing in scope exists outside that workflow.
 
 ### Out of Scope
 
@@ -288,7 +290,6 @@ These exclusions are deliberate scope controls. They prevent the MVP from becomi
 * Native mobile applications
 * Complex invitation-management systems
 * Any feature outside the defined auction workflow
-
 ---
 
 ## Task 3: Identify Risks & Mitigation Strategies
