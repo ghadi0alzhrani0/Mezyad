@@ -24,7 +24,7 @@ This charter defines the purpose, objectives, stakeholders, team responsibilitie
 
 Mezyad provides a focused auction experience for high-value assets. Its purpose rests on five elements. Each addresses a specific need of high-value online auctions, and each belongs in the MVP because it directly supports the auction workflow.
 
-**1. Clear asset information.** High-value assets differ widely, and a vague listing leaves bidders unable to judge what they are bidding on. Sellers enter structured, category-specific information (for example, make, model, year, mileage, and condition for a vehicle) and can use a lightweight AI Listing Assistant to prepare the listing. Administrators review each listing before it becomes an auction. This belongs in the MVP because the rest of the auction depends on bidders understanding the asset.
+**1. Clear asset information.** High-value assets require clear and structured information because bidders need to understand what they are considering before participating in an auction. Sellers provide category-specific details, such as make, model, year, mileage, and condition for vehicles, or property type, area, location, bedrooms, and condition for real estate. Structuring the information makes listings easier to understand and gives bidders consistent details to review before placing a bid. Administrators review submitted listings before they become available as auctions. This is part of the MVP because a reliable auction depends on bidders having sufficient and organized information about the asset.
 
 **2. Controlled participation.** Not every high-value asset is intended for the general public. A seller can make an auction public or restrict it through a private access code. This gives sellers a simple way to control who can enter an auction without requiring a participant-management system.
 
@@ -34,9 +34,14 @@ Mezyad provides a focused auction experience for high-value assets. Its purpose 
 
 **5. Predictable auction closure.** An auction needs a clear, unambiguous ending. At the final valid end time, bidding stops, the winner is determined from valid bids, and the result is recorded and displayed. This completes the auction workflow without extending into activities that happen after the auction.
 
-**Why the combination matters.** Together, these elements make Mezyad an auction platform rather than a general marketplace. It does not support fixed-price selling, catalogues of unrelated goods, or management of what happens after the auction. Every feature exists to make the auction itself clearer, more controlled, or more reliable.
-
-Mezyad demonstrates this workflow in a sandbox environment as a student MVP. It does not claim to eliminate fraud or to guarantee financial, legal, or security protection.
+**6. Smart Auction Assistant**The Smart Auction Assistant is a lightweight feature designed to improve the usability of Mezyad for both sellers and bidders. It provides simple assistance with listing creation, auction discovery, and understanding auction activity without making financial or bidding decisions.
+The assistant can provide the following functions:
+* Listing Title Suggestion: Generates a clear auction title based on the asset information provided by the seller.
+* Search Assistance: Helps bidders find relevant auctions using simple natural-language queries based on factors such as asset type, category, location, or price range.
+* Auction Activity Summary: Provides a concise summary of auction activity, including the number of bidders, number of bids, and overall bidding activity.
+* Bidding Activity Insights: Displays basic activity patterns, such as periods with increased bidding activity and the number of bids received during different periods of the auction.
+* Auction Summary: Provides bidders with a quick overview of the current auction state, including the current highest bid, number of bids, remaining time, and recent activity.
+* Listing Completeness Suggestions: Identifies missing or incomplete listing information and suggests details that the seller may want to add.
 
 ### SMART Objectives
 
