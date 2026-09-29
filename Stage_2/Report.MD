@@ -329,15 +329,17 @@ The mitigations above are supported by practices the team applies throughout dev
 
 ## Task 4: Develop a High-Level Plan
 
+The plan maps the five official project stages onto the 12-week schedule and identifies the key deliverables and milestones of each stage. It is a high-level plan and does not specify detailed technical tasks.
+
 ### Project Timeline
 
-| Stage | Purpose | Weeks | Deliverable |
+| Stage | Purpose | Weeks | Key Deliverables |
 | :--- | :--- | :--- | :--- |
-| **Stage 1 — Idea Development** | Generate and evaluate ideas and select the MVP concept | Week 1 | Selected concept: Mezyad (completed) |
-| **Stage 2 — Project Charter** | Fix the purpose, objectives, stakeholders, responsibilities, scope, risks, and plan before design begins | Weeks 2–3 | Project Charter (this document) |
-| **Stage 3 — Requirements & Technical Design** | Decide how the approved scope will be built: user stories, UI/UX, architecture, database design, API design, auction rules, anti-sniping design, bank API design, AI Listing Assistant design, and testing strategy | Weeks 4–5 | Technical documentation set |
-| **Stage 4 — Implementation & Integration** | Build and connect the approved features: authentication, listings, admin approval, public/private auctions, bidder commitment, bank API, real-time bidding, anti-sniping, AI listing assistance, auction closure, and winner determination | Weeks 6–10 | Functional Mezyad auction MVP |
-| **Stage 5 — Testing, Bug Fixing, Documentation & Presentation** | Verify the MVP, fix defects, and complete documentation and the final presentation | Weeks 11–12 | Tested MVP, final documentation, presentation |
+| **Stage 1 — Idea Development** (Completed) | Generate and evaluate ideas and select the MVP concept | Week 1 | Selected concept: Mezyad |
+| **Stage 2 — Project Charter Development** (Current) | Fix the purpose, objectives, stakeholders, responsibilities, scope, risks, and plan before design begins | Weeks 2–3 | Project Charter (this document) |
+| **Stage 3 — Technical Documentation** | Document how the approved scope will be built: requirements and user stories, UI/UX, architecture, database design, API design, auction rules, anti-sniping design, bank API planning, Smart Auction Assistant design, and testing strategy | Weeks 4–5 | Technical documentation set |
+| **Stage 4 — MVP Development** | Build and connect the approved features: authentication, listings, admin approval, public/private auctions, bidder commitment, bank API integration, real-time bidding, anti-sniping, Smart Auction Assistant, auction closure, and winner determination | Weeks 6–10 | Functional Mezyad auction MVP |
+| **Stage 5 — Project Closure** | Complete the project: final system testing, bug fixing, final documentation, and the final presentation | Weeks 11–12 | Tested MVP, final documentation, and presentation |
 
 ### Major Milestones
 
@@ -346,26 +348,28 @@ The mitigations above are supported by practices the team applies throughout dev
 | **End of Week 3** | Project Charter completed |
 | **End of Week 5** | Technical documentation completed |
 | **End of Week 9** | Core auction functionality working: listings, admin approval, public/private auctions, bidding, bid history, real-time updates, anti-sniping (Objective 2) |
-| **End of Week 10** | Full approved MVP integrated: commitment, bank API, AI listing assistance, closure, winner determination (Objective 1) |
-| **End of Week 12** | Testing, bug fixing, final documentation, and presentation completed (Objective 3) |
+| **End of Week 10** | Full approved MVP integrated: commitment, bank API integration, Smart Auction Assistant, closure, winner determination (Objective 1) |
+| **End of Week 12** | Final testing, bug fixing, final documentation, and presentation completed (Objective 3) |
 
 ### Why the Plan Is Sequenced This Way
 
-The plan follows a dependency chain: requirements and design, then implementation, then integration, then testing. Design comes first because the database, backend, and frontend depend on shared decisions such as data structures and API contracts. Implementation follows so that the team builds against agreed designs rather than assumptions. Testing comes last because it needs a working, integrated MVP.
+The plan follows a dependency chain: technical documentation, then implementation, then integration, then final system testing. Technical documentation comes first because the database, backend, and frontend depend on shared decisions such as data structures and API contracts. Implementation follows so that the team builds against agreed designs rather than assumptions. Final system testing occurs after the MVP is integrated, because it needs the complete workflow to be running. Feature-level testing and validation are performed throughout development, as each feature is completed, so that problems are found while there is still time to fix them.
 
-Within Stage 4, the core auction is built first (Weeks 6–9), because listings, approval, bidding, live updates, and anti-sniping form the foundation the other features attach to. Bidder commitment, bank API integration, AI listing assistance, closure, and winner determination are integrated in Week 10, since they depend on the auction core being in place. This ordering also gives the team an early check on the most demanding part of the project, real-time bidding.
+Within Stage 4, the core auction is built first (Weeks 6–9), because listings, approval, bidding, live updates, and anti-sniping form the foundation the other features attach to. Bidder commitment, bank API integration, the Smart Auction Assistant, closure, and winner determination are integrated in Week 10, since they depend on the auction core being in place. This ordering also gives the team an early check on the most demanding part of the project, real-time bidding.
 
-Bank API access is treated as an early dependency even though the integration is implemented later. Sandbox access depends on the provider rather than on the team, and the exact API operation cannot be selected until the documentation and access are reviewed. Requesting access early and settling the operation in Stage 3 reduces the chance that the commitment flow is blocked when implementation needs it.
+Bank API access is treated as an early dependency even though the integration is implemented later. Sandbox access depends on the provider rather than on the team, has not yet been obtained, and the exact API operation cannot be selected until the documentation and access are reviewed. Requesting access early and settling the operation in Stage 3 reduces the chance that the commitment flow is blocked when implementation needs it.
 
 ---
 
-## Task 5: Project Charter Completion / Transition to Stage 3
+## Task 5: Share Your Document
 
-This Project Charter is the completed Stage 2 deliverable. It establishes the project purpose, three SMART objectives, product and project stakeholders, team responsibilities, in-scope and out-of-scope boundaries, a risk register with mitigations, and a high-level 12-week schedule with milestones.
+This Project Charter is now complete. Together, Tasks 0 to 4 provide the project purpose and SMART objectives; the stakeholders and team responsibilities; the in-scope and out-of-scope boundaries; the risks with mitigation strategies; and the high-level timeline and milestones. The document is ready to be shared for review.
 
 **Document Status:** Stage 2 Project Charter — Final
 
 The charter creates a baseline for implementation. It fixes the objectives the team will be measured against, the stakeholders the system serves, the responsibilities each member holds, the scope the team will build, the risks the team will monitor, and the schedule the team will follow. Later stages work from this baseline rather than reopening these decisions.
+
+### Transition to Stage 3
 
 **Stage 2 defines WHAT the project will deliver. Stage 3 defines HOW it will be designed and implemented.**
 
@@ -377,7 +381,7 @@ Stage 3 may specify technical details such as:
 * system architecture
 * anti-sniping parameters (threshold and extension duration)
 * the selected bank API operation
-* the AI implementation approach
+* the Smart Auction Assistant implementation approach
 * the testing strategy
 
-Stage 3 must not introduce major new product features that are absent from this approved Stage 2 scope. If a capability is not approved here, it does not appear as a major feature in the technical documentation.
+Stage 3 should remain within the approved Stage 2 scope and should not introduce major new product features unless the project scope is formally revised.
