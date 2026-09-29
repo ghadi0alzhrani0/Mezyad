@@ -12,7 +12,7 @@
 
 Registration / Login → Seller Creates Listing → Structured Asset Information → Admin Review & Approval → Public or Private Auction → Bid Commitment → Bank API Integration through a Saudi Open Banking Sandbox → Live Real-Time Bidding → Anti-Sniping → Auction Closure → Winner Determination / Auction Result
 
-**Boundaries.** Mezyad is a student graduation MVP. It does not move real money, does not use live customer banking data, does not provide production financial services or production KYC, and makes no production-grade legal, financial, or security guarantees. The bank integration uses an official sandbox/testing environment with test data. The workflow ends with a recorded winner and auction result, and nothing after that point is part of the project.
+**Boundaries.** Mezyad is a student graduation MVP. It does not move real money, does not use live customer banking data, does not provide production financial services, and makes no production-grade legal, financial, or security guarantees. The bank integration uses an official sandbox/testing environment with test data. The workflow ends with a recorded winner and auction result, and nothing after that point is part of the project.
 
 This charter defines the purpose, objectives, stakeholders, team responsibilities, scope, risks, and high-level plan that guide Stages 3 to 5.
 
@@ -68,48 +68,84 @@ By the end of Week 12, complete structured testing and validation covering authe
 
 ## Task 1: Identify Stakeholders and Team Roles
 
-### Product Stakeholders
+This task separates two groups. **Product users and beneficiaries** are the people who use Mezyad and benefit from it. **Project stakeholders** are the people and groups with an interest in the project itself: those who build it, assess it, and guide it. The two groups have different needs, so they are described separately.
 
-Product stakeholders are the people who use Mezyad. Each has a distinct role in the auction workflow, which is why the system separates their access.
+### Product Users and Beneficiaries
 
-**Bidders / Buyers**
-* *Role in the workflow:* they find or access auctions, review asset information, complete the commitment step and the required bank integration flow, place bids, monitor the auction, and receive the auction result.
-* *Main interaction:* the live auction view, where they place bids and follow the current highest bid and timer.
-* *What they need:* understandable listings, controlled participation, predictable auction state, and visible bid status.
+#### Bidders / Buyers
 
-**Sellers**
-* *Role in the workflow:* they create listings, provide structured asset information, use the AI Listing Assistant, choose public or private access, submit listings for approval, and monitor the auction result.
-* *Main interaction:* the listing creation form and the listing status view.
-* *What they need:* simple listing creation, structured information that fits their asset category, assistance with titles and descriptions, and control over whether the auction is public or private.
+**Who benefits and how.** Bidders benefit from an auction they can understand before they take part, join through a clear sequence of steps, and follow live. Mezyad gives them structured asset information, a defined step to complete before bidding, a live view of the auction, and an auction that ends with a clear result.
 
-**Administrators**
-* *Role in the workflow:* they review submitted listings, approve or reject them, manage required platform controls, and monitor auction status where necessary.
-* *Main interaction:* the listing review interface.
-* *What they need:* a clear review workflow, the ability to approve or reject a listing, and visibility over relevant listing and auction status.
+**What they use.**
+* Listing pages with structured, category-specific information (for example make, model, year, mileage, and condition for a vehicle), so they can understand the asset before bidding.
+* Public auctions from the public list, or private auctions through an access code provided by the seller.
+* The Bid Commitment step, which includes the bank sandbox interaction, before they can place bids.
+* The live auction view, which shows the current highest bid, bid history, and auction timer, and updates as bids arrive.
+* The auction result, shown when the auction closes.
+
+**Why their role is needed.** An auction has no meaning without bidders. Their experience during the live auction is the main test of the platform. They need to know what they are bidding on, why they may or may not enter an auction, what the current price is, how much time remains, and when the auction ends. Anti-sniping gives them additional time to respond when a valid bid arrives near the scheduled closing time.
+
+#### Sellers
+
+**Who benefits and how.** Sellers benefit from a structured way to offer a high-value asset for auction. Mezyad helps them present the asset clearly, choose who can access the auction, and have the listing reviewed before it is published.
+
+**What they use.**
+* The listing creation form, with a title, category, description, images, starting price, auction start and end times, and category-specific asset fields.
+* The AI Listing Assistant, which suggests a title, generates or improves the description, and suggests missing information. The seller stays responsible for the final content.
+* The public or private access option. Private auctions stay out of the public list and are accessed through a private access code that the seller provides to participants outside the platform.
+* The listing status view, and later the auction result.
+
+**Why their role is needed.** Sellers supply the assets and the information about them, so the quality of the auction starts with the quality of the listing. Structured fields and AI-assisted drafting help them present the asset clearly. Admin Review means the listing goes through a defined approval step before it becomes an auction, rather than being published immediately without control. The result is an organized, reviewed auction instead of an uncontrolled posting.
+
+#### Administrators
+
+**Who benefits and how.** Administrators benefit from a single workflow for reviewing submitted listings, so they can decide what becomes an auction. Mezyad gives them the information they need to make that decision and the means to record it.
+
+**What they use.**
+* The listing review interface, where they see each submitted listing with its structured asset information.
+* The approve and reject actions. Only approved listings can proceed to auction.
+* Visibility over relevant listing and auction status, where monitoring is necessary.
+
+**Why their role is needed.** High-value assets should not become auctions automatically on submission. The administrator's decision keeps published auctions inside a defined workflow and gives the platform a controlled publishing step. The AI Listing Assistant does not replace this role, because it only produces suggestions and every listing is still reviewed by an administrator.
 
 ### Project Stakeholders
 
-| Stakeholder | Why they matter to the project | What they need |
-| :--- | :--- | :--- |
-| **Project Team** | Designs, builds, tests, and documents the MVP, so the project's outcome depends on the team's ability to deliver it | A clearly defined, achievable scope and a realistic schedule |
-| **Academy Instructors / Evaluators** | Assess whether the project meets the stage requirements and demonstrates technical depth | A measurable, well-scoped, and demonstrable project |
-| **Project Supervisor / Mentor** | Provides project guidance and ensures required project constraints and integrations are addressed | Evidence that required constraints, such as the Saudi bank API integration, are included and progressing |
+Project stakeholders are not users of the platform. They are the groups who create, evaluate, or guide the project. Their interest is in whether the project is delivered, meets its requirements, and stays within its agreed scope.
+
+| Stakeholder | Why they are a stakeholder | Relationship to the project | What they need or expect |
+| :--- | :--- | :--- | :--- |
+| **Project Team** (Abeer, Ghadi, Aseel, Tala) | The project's outcome depends directly on the team's work and on its ability to deliver within 12 weeks | Plans, designs, builds, tests, and documents the MVP | A clearly defined, achievable scope; clear responsibilities; and a realistic schedule |
+| **Academy Instructors / Evaluators** | They assess the project against the academic requirements of each stage | Review the deliverables at each stage and evaluate the final MVP | A measurable, well-scoped, technically meaningful, and demonstrable project, documented consistently across stages |
+| **Project Supervisor / Mentor** | Provides project guidance and ensures required project constraints and integrations are addressed | Guides the team's decisions and confirms that required constraints, such as the Saudi bank API integration, are handled | Evidence that required constraints are included in the scope and progressing, and that the project stays focused and realistic |
 
 ### Team Responsibilities
 
+The table below is the team's agreed working structure. It assigns each area two members so that every part of the project has a clear starting point.
+
 | Responsibility Area | Members | Responsibilities |
 | :--- | :--- | :--- |
-| **Database** | Abeer + Tala | Database design and data model (users, listings, auctions, commitments, bids, results); database-related integration |
-| **Backend** | Abeer + Ghadi | Server-side logic, authentication, authorization, listing logic, auction rules, bid validation, anti-sniping, auction closure, bank API integration, AI integration |
-| **Frontend** | Aseel + Ghadi | Responsive web interface: bidder, seller, and admin interfaces; live auction interface; real-time auction state presentation |
-| **Task Review & Cross-Task Integration** | Tala + Aseel | Review completed tasks, verify consistency, check that database, backend, and frontend work together, and identify integration issues |
-| **Task Allocation, Technical Approach & Docker Operation** | Abeer + Ghadi | Coordinate task allocation, guide the technical approach, coordinate implementation dependencies, and operate and maintain the Docker development environment |
+| **Database** | Abeer + Tala | Database design and data model for users, listings, auctions, commitments, bids, and auction results; database integration with the backend; making sure the data needed by the auction workflow is present and well organized |
+| **Backend** | Abeer + Ghadi | Server-side logic; authentication and authorization; listing logic; admin approval logic; public/private auction access; bid validation and auction rules; real-time auction logic; anti-sniping; auction closure and winner determination; bank API integration; AI Listing Assistant integration |
+| **Frontend** | Aseel + Ghadi | Responsive web interface; bidder, seller, and admin interfaces; listing creation UI; auction UI with live highest bid, bid history, and auction timer; real-time state presentation; public/private auction access interfaces |
+| **Task Review & Cross-Task Integration** | Tala + Aseel | Reviewing completed work; checking consistency between tasks; checking that requirements are reflected correctly; checking integration between frontend, backend, and database; identifying missing or conflicting work; helping detect issues before final integration |
+| **Task Allocation, Technical Approach & Docker Operation** | Abeer + Ghadi | Task allocation; organizing implementation dependencies; coordinating the technical approach; keeping work aligned with the approved scope; operating the Docker development environment; maintaining a consistent environment for the team; supporting reliable project setup and demonstration |
 
 Docker is used to maintain a consistent development environment across team members and support a reliable project demonstration.
 
-These are primary responsibility areas rather than exclusive ownership. Team members may collaborate across areas when required.
+**Primary Responsibility Areas.** The team maintains a high level of flexibility, and all members are prepared to support or take on tasks outside their primary responsibility area when required. The responsibility structure is therefore not intended to create exclusive ownership. Instead, it provides a clear starting point for each area, reduces ambiguity, limits duplicated effort, improves task tracking, and helps the team use its time efficiently. Members can collaborate across areas whenever a task requires shared knowledge or when workload changes. A task assigned to one area does not mean that only that member can carry it out.
 
-**Why this structure works.** Each area has two named members, so every area has clear primary responsibility and a second person who understands it. Members also appear in more than one area: Abeer and Tala link the database to the backend, Abeer and Ghadi link the backend to task coordination, and Ghadi links the backend to the frontend. These overlaps sit at the boundaries where integration problems are most likely, such as between the database and server logic, or between the server and the live auction interface. Tala and Aseel review completed work across areas, so integration is checked by people who did not write every part. This reduces gaps between areas while keeping ownership clear.
+### Why This Responsibility Structure Supports Collaboration
+
+* **Less lost time.** Members know where to begin a task and do not spend time deciding who should handle it.
+* **A clear primary contact.** Every area has a known primary responsibility, so questions and decisions have a natural place to go.
+* **Less duplicated work.** Assigning areas reduces the chance that two members build the same part independently.
+* **Easier communication.** When a problem appears, the team knows whom to consult first.
+* **Better integration.** The database, backend, and frontend areas each have named members, and Task Review & Cross-Task Integration checks the boundaries between them.
+* **Shared knowledge.** Each area has two members, so more than one person understands it and the team does not depend on a single person.
+* **Flexibility.** Because the structure is a starting point rather than a rule, members can move between areas when priorities change.
+* **Easier progress tracking.** The team can see which area a task belongs to, who started it, and who follows up.
+
+Members also appear in more than one area: Abeer and Tala link the database to the backend, Abeer and Ghadi link the backend to task coordination, and Ghadi links the backend to the frontend. These overlaps sit at the points where integration problems are most likely.
 
 ---
 
@@ -121,7 +157,15 @@ Scope control is one of the main purposes of this charter. Every item below dire
 
 **Authentication & Access**
 
-Registration and login give users controlled access, so listings, commitments, and bids belong to authenticated users. Role-based access separates three roles: Bidder/Buyer, Seller, and Administrator. Role separation is needed because each participant has a different responsibility: only sellers create listings, only administrators approve them, and only bidders who are permitted access to an auction can bid in it.
+Authentication in Mezyad consists of registration, login, and role-based access. Users register and log in in the conventional way, and the platform then gives each user access according to their role. This is a basic function that any platform of this kind needs, and it is not a distinguishing feature of the project.
+
+There are three roles:
+
+* **Bidder / Buyer:** can browse public auctions, access private auctions with the correct code, complete the commitment step, and place bids.
+* **Seller:** can create listings, use the AI Listing Assistant, choose public or private access, submit listings for approval, and view the results of their auctions.
+* **Administrator:** can review submitted listings and approve or reject them, and can monitor auction status where necessary.
+
+Authentication is needed so that listings, commitments, and bids are linked to the correct user. Role-based access is needed so that each user reaches only the functions allowed for their role: only sellers create listings, only administrators approve them, and only bidders who have access to an auction can bid in it.
 
 **Seller Listings and Structured Asset Information**
 
@@ -174,7 +218,7 @@ The AI Listing Assistant is one lightweight capability inside listing creation, 
 
 Sellers may have the asset details but not know how to present them clearly, and listing quality affects how well bidders understand the asset. The three functions cover the main listing-writing needs (title, description, and completeness) and all work from information the seller has already provided. The assistant stays lightweight because it only produces suggestions during listing creation and has no role after submission.
 
-The seller provides the underlying information and remains responsible for the final content, and the administrator still reviews every listing. AI is not used for pricing or bidding decisions, because that would turn the project into a valuation or prediction system outside the auction workflow. The assistant does not determine prices, appraise assets, predict winners, make bidding or financial decisions, perform KYC, approve listings, or act as a chatbot.
+The seller provides the underlying information and remains responsible for the final content, and the administrator still reviews every listing. AI is not used for pricing or bidding decisions, because that would turn the project into a valuation or prediction system outside the auction workflow. The assistant does not determine prices, appraise assets, predict winners, make bidding or financial decisions, approve listings, or act as a chatbot.
 
 **Quality**
 
@@ -190,7 +234,6 @@ These exclusions are deliberate scope controls. They prevent the MVP from becomi
 * Real financial settlement
 * Escrow and financial custody
 * Production banking data
-* Production KYC / Nafath
 * Invoices
 * Handover management
 * Delivery and logistics
