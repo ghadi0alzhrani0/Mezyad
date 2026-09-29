@@ -368,20 +368,3 @@ This Project Charter is now complete. Together, Tasks 0 to 4 provide the project
 **Document Status:** Stage 2 Project Charter — Final
 
 The charter creates a baseline for implementation. It fixes the objectives the team will be measured against, the stakeholders the system serves, the responsibilities each member holds, the scope the team will build, the risks the team will monitor, and the schedule the team will follow. Later stages work from this baseline rather than reopening these decisions.
-
-### Transition to Stage 3
-
-**Stage 2 defines WHAT the project will deliver. Stage 3 defines HOW it will be designed and implemented.**
-
-Stage 3 may specify technical details such as:
-
-* API contracts
-* database schema
-* UI flows
-* system architecture
-* anti-sniping parameters (threshold and extension duration)
-* the selected bank API operation
-* the Smart Auction Assistant implementation approach
-* the testing strategy
-
-Stage 3 should remain within the approved Stage 2 scope and should not introduce major new product features unless the project scope is formally revised.
