@@ -36,23 +36,7 @@ Mezyad provides a focused auction experience for high-value assets. Its purpose 
 
 **5. Predictable auction closure.** An auction needs a clear, unambiguous ending. At the final valid end time, bidding stops, the winner is determined from valid bids, and the result is recorded and displayed. This completes the auction workflow without extending into activities that happen after the auction.
 
-**6. Smart Auction Assistant.**
-
-The Smart Auction Assistant is a lightweight feature designed to improve the usability of Mezyad for both sellers and bidders. It provides simple assistance with listing creation, auction discovery, and understanding auction activity without making financial or bidding decisions. It works only with information already available in the platform.
-
-The assistant provides the following six functions.
-
-*Seller-side*
-
-* Listing Title Suggestion: Generates a clear auction title based on the asset information provided by the seller.
-* Listing Completeness Suggestions: Identifies missing or incomplete listing information and suggests details that the seller may want to add.
-
-*Bidder-side*
-
-* Search Assistance: Helps bidders find relevant auctions using simple natural-language queries based on factors such as asset type, category, location, or price range.
-* Auction Activity Summary: Provides a concise summary of auction activity, including the number of bidders, number of bids, and overall bidding activity.
-* Bidding Activity Insights: Displays basic activity patterns, such as periods with increased bidding activity and the number of bids received during different periods of the auction.
-* Auction Summary: Provides bidders with a quick overview of the current auction state, including the current highest bid, number of bids, remaining time, and recent activity.
+**6. Smart Auction Assistant.** The assistant helps sellers prepare listings and bidders find and follow auctions using information already available in Mezyad. It does not make bidding, financial, or listing-approval decisions. Its six functions and scope limits are detailed under Task 2.
 
 ### SMART Objectives
 
@@ -144,21 +128,7 @@ Mezyad has three product users: bidders/buyers, sellers, and administrators. Eac
 
 ### Smart Auction Assistant
 
-The Smart Auction Assistant is a lightweight feature designed to improve the usability of Mezyad for both sellers and bidders. It provides simple assistance with listing creation, auction discovery, and understanding auction activity without making financial or bidding decisions.
-
-**Seller-side assistance**
-* **Listing Title Suggestion:** generates a clear auction title based on the asset information provided by the seller.
-* **Listing Completeness Suggestions:** identifies missing or incomplete listing information and suggests details that the seller may want to add.
-
-**Bidder-side assistance**
-* **Search Assistance:** helps bidders find relevant public auctions using simple natural-language queries based on factors such as asset type, category, location, or price range. Private auctions are not discoverable this way and remain accessible only through their access code.
-* **Auction Activity Summary:** provides a concise summary of auction activity, including the number of bidders, the number of bids, and overall bidding activity.
-* **Bidding Activity Insights:** displays basic activity patterns, such as periods with increased bidding activity and the number of bids received during different periods of the auction.
-* **Auction Summary:** gives bidders a quick overview of the current auction state, including the current highest bid, number of bids, remaining time, and recent activity.
-
-**Why it exists and how it stays lightweight.** Sellers may have the asset details but not know how to present them, and bidders may find it hard to follow an auction that is moving quickly. The assistant uses information already available within the platform and is intentionally limited to simple, practical functions that can be implemented within the MVP. For example, the activity summary relies on bid and bidder counts, the auction summary on the current highest bid, bid count, remaining time, and recent activity, the bidding insights on the timestamps of bids already recorded, and the completeness suggestions on required fields that are missing. It does not use predictive analytics, a specially trained model, or a recommendation engine.
-
-**Limits.** The assistant does not determine asset value, recommend bid amounts, predict auction winners, make financial decisions, approve listings, or replace user decisions. It is not a chatbot.
+The bidder and seller uses of the assistant are described in their respective stakeholder sections above. Its six functions, rationale, and scope limits are detailed under Task 2.
 
 ### Project Stakeholders
 
@@ -172,19 +142,20 @@ Project stakeholders are not users of the platform. They are the groups who crea
 
 ### Team Responsibilities
 
-The table below is the team's agreed working structure. It assigns each area two members so that every part of the project has a clear starting point.
+The table below is the team's agreed working structure. It identifies the members responsible for each area so that every part of the project has a clear starting point.
 
 | Responsibility Area | Members | Responsibilities |
 | :--- | :--- | :--- |
 | **Database** | Abeer + Tala | Database design and data model for users, listings, auctions, commitments, bids, and auction results; database integration with the backend; making sure the data needed by the auction workflow is present and well organized |
 | **Backend** | Abeer + Ghadi | Server-side logic; authentication and authorization; listing logic; admin approval logic; public/private auction access; bid validation and auction rules; real-time auction logic; anti-sniping; auction closure and winner determination; bank API integration; Smart Auction Assistant integration |
 | **Frontend** | Aseel + Ghadi | Responsive web interface; bidder, seller, and admin interfaces; listing creation UI; auction UI with live highest bid, bid history, and auction timer; real-time state presentation; public/private auction access interfaces |
+| **Figma & UI/UX Design** | Ghadi | Designs the website screens and user flows in Figma, and prepares interface layouts and interaction details for frontend implementation |
 | **Task Review & Cross-Task Integration** | Tala + Aseel | Reviewing completed work; checking consistency between tasks; checking that requirements are reflected correctly; checking integration between frontend, backend, and database; identifying missing or conflicting work; helping detect issues before final integration |
 | **Task Allocation, Technical Approach & Docker Operation** | Abeer + Ghadi | Task allocation; organizing implementation dependencies; coordinating the technical approach; keeping work aligned with the approved scope; operating the Docker development environment; maintaining a consistent environment for the team; supporting reliable project setup and demonstration |
 
 Docker is used to maintain a consistent development environment across team members and support a reliable project demonstration.
 
-**Primary Responsibility Areas.** These roles are primary responsibility areas rather than exclusive ownership. Each area has named members who start and follow up its work, which keeps responsibilities clear and makes task tracking easier. Members are expected to support tasks outside their primary area when project conditions require it, and to collaborate across areas when tasks have dependencies or integration issues. This does not mean that everyone does everything. Having two members in each area also reduces dependence on a single person.
+**Primary Responsibility Areas.** These roles are primary responsibility areas rather than exclusive ownership. Each area has named members who start and follow up its work, which keeps responsibilities clear and makes task tracking easier. Members are expected to support tasks outside their primary area when project conditions require it, and to collaborate across areas when tasks have dependencies or integration issues. This does not mean that everyone does everything. Sharing implementation responsibilities also reduces dependence on a single person.
 
 ### Why This Responsibility Structure Supports Collaboration
 
@@ -193,7 +164,7 @@ Docker is used to maintain a consistent development environment across team memb
 * **Less duplicated work.** Assigning areas reduces the chance that two members build the same part independently.
 * **Easier communication.** When a problem appears, the team knows whom to consult first.
 * **Better integration.** Three boundaries matter most in Mezyad. *Database ↔ Backend:* Abeer works in both areas, and the data model must match the auction rules, bids, and commitments the server processes. *Backend ↔ Frontend:* Ghadi works in both, so live auction state, bid validation results, and assistant outputs reach the interface consistently. *Task Review ↔ All Areas:* Tala and Aseel review work across every area and check that the parts fit together before final integration.
-* **Shared knowledge.** Each area has two members, so more than one person understands it and the team does not depend on a single person.
+* **Shared knowledge.** Most implementation areas have two members, so more than one person understands the work and the team is less dependent on a single person.
 * **Flexibility.** Because the structure is a starting point rather than a rule, members can move between areas when priorities change.
 * **Easier progress tracking.** The team can see which area a task belongs to, who started it, and who follows up.
 
