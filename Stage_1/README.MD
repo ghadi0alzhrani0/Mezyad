@@ -53,6 +53,6 @@ This document outlines the requirements, guidelines, and structural framework fo
 
 ## Authors & Project Team
 * Abeer Al-Saiari (Project Manager & DevOps Lead)
-* Ghadi Al-Zahrani (Database & Architecture Lead)
+* Ghadi Al-Zahrani (Frontend UI/UX & Client Logic Lead)
 * Aseel Al-Zahrani (Backend & Real-Time Engine Lead)
-* Tala Al-Hudaibi (Frontend UI/UX & Client Logic Lead)
+* Tala Al-Hudaibi (Database & Architecture Lead)
