@@ -38,7 +38,8 @@ Redis coordinates and caches; it never decides whether a bidding operation is ac
 
 | Priority | Role | User Story |
 |---|---|---|
-| **Must Have** | Bidder | As a bidder, I want to register and log in so that I can participate in auctions. |
+| **Must Have** | Bidder / Seller | As a new user, I want to register as a bidder or seller so that I can access the features for my role. |
+| **Must Have** | Bidder / Seller | As a registered user, I want to log in so that I can access my account and continue my auction activities. |
 | **Must Have** | Bidder | As a bidder, I want to see auction prices update instantly so that I can participate without refreshing the page. |
 | **Must Have** | Bidder | As a bidder, I want to complete the Bid Commitment step so that I can participate in an auction. |
 | **Must Have** | Seller | As a seller, I want to create a structured listing with images so that bidders can understand the asset and it can be reviewed before going live. |
@@ -50,6 +51,10 @@ Redis coordinates and caches; it never decides whether a bidding operation is ac
 | **Should Have** | Bidder | As a bidder, I want to know the final auction result so that I know whether I won. |
 | **Should Have** | Admin | As an admin, I want to monitor auction status where necessary so that I can intervene when needed. |
 | **Should Have** | Seller / Bidder | As a seller or bidder, I want to use the Smart Auction Assistant (Section 2.3) so that I can write clearer listings or follow an auction more easily. |
+
+Registration succeeds when valid name, email, password, and bidder or seller role are provided. Invalid information or an email already in use shows an error.
+
+Login succeeds with a registered email and correct password. Incorrect credentials show an error and do not grant access.
 
 ### 2.2 UI Mockups & Design Approach
 
