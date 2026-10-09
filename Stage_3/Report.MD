@@ -77,7 +77,7 @@ Mezyad is a high-value asset auction platform that brings together bidders, sell
 
 The Figma UI prototype presents the screen designs, visual layout, and seven demonstration flows for the bidder, seller, and administrator experiences.
 
-**Figma Make Prototype:** [View the Mezyad Make prototype](https://www.figma.com/make/kPPjEPSCp5baGlCi8Lz2o4/Mezyad-1?t=ze339TrerXsNzETc-20&fullscreen=1)
+**Figma Make Prototype:** [View the Mezyad Make prototype](https://www.figma.com/make/kPPjEPSCp5baGlCi8Lz2o4/Mezyad-1?t=Z7jnPTxHHkYSNbgS-20&fullscreen=1)
 
 The Figma Make link presents Mezyad's interactive prototype in fullscreen preview mode. It provides a website-style preview for exploring the interface and navigating the project's sample pages and auction scenarios.
 
