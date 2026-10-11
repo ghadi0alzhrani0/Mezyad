@@ -451,26 +451,42 @@ sequenceDiagram
 ### Flow 5 — Auction Closure and Result
 
 ```mermaid
+
 sequenceDiagram
-  actor User
-  participant UI as React
-  participant API as Express
-  participant DB as PostgreSQL
-  User->>UI: Open auction after end time
-  UI->>API: GET /auctions/:id
-  API->>DB: BEGIN; lock auction row FOR UPDATE
-  alt Result already recorded
-    API->>DB: Read existing result
-  else Auction has ended
-    API->>DB: Read highest accepted bid for this auction
-    alt Accepted bid exists
-      API->>DB: Save winner bid ID and CLOSED status
-    else No accepted bids
-      API->>DB: Save result without winner and CLOSED status
+    actor User
+    participant UI as React
+    participant API as Express
+    participant DB as PostgreSQL
+
+    User->>UI: Open auction details
+    UI->>API: Request auction details
+    API->>DB: BEGIN transaction
+    API->>DB: Lock auction row using FOR UPDATE
+    DB-->>API: Return auction status and end time
+
+    alt Auction already closed
+        API->>DB: Read existing auction result
+        DB-->>API: Return saved result
+    else Auction end time has passed
+        API->>DB: Read highest accepted bid
+        DB-->>API: Return winning bid or no bids
+
+        alt Winning bid exists
+            API->>DB: Save winning bid as result
+            API->>DB: Set auction status to CLOSED
+        else No accepted bids
+            API->>DB: Save result without winner
+            API->>DB: Set auction status to CLOSED
+        end
+    else Auction is still active
+        API->>DB: Read current auction details
+        DB-->>API: Return active auction
     end
-  end
-  API->>DB: COMMIT
-  API-->>UI: Closed auction and final result
+
+    API->>DB: COMMIT transaction
+    API-->>UI: Return auction status and result
+    UI-->>User: Display auction details
+end
 ```
 
 The backend rejects bids based on server time even before the closure record is written. The same auction-row lock is used for bid acceptance and closure. The result is saved once and returned consistently on later requests.
