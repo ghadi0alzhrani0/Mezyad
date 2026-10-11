@@ -451,7 +451,6 @@ sequenceDiagram
 ### Flow 5 — Auction Closure and Result
 
 ```mermaid
-
 sequenceDiagram
     actor User
     participant UI as React
