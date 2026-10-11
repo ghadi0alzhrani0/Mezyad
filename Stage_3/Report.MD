@@ -1,8 +1,5 @@
 # Mezyad — Stage 3 Technical Documentation
 
-**A High-Value Asset Auction Platform**  
-Graduation Capstone Project
-
 ---
 
 ## 1. Preface
