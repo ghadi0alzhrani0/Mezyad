@@ -485,7 +485,6 @@ sequenceDiagram
     API->>DB: COMMIT transaction
     API-->>UI: Return auction status and result
     UI-->>User: Display auction details
-end
 ```
 
 The backend rejects bids based on server time even before the closure record is written. The same auction-row lock is used for bid acceptance and closure. The result is saved once and returned consistently on later requests.
