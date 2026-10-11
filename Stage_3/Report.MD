@@ -418,25 +418,33 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-  actor User as Bidder
-  participant UI as React
-  participant API as Express
-  participant DB as PostgreSQL
-  User->>UI: Enter amount and confirm
-  UI->>API: POST /auctions/:id/bids
-  API->>DB: BEGIN; lock auction row FOR UPDATE
-  DB-->>API: Current auction state
-  API->>DB: Read asset owner, access, commitment and last bid
-  API->>API: Check request ID, ownership, access and deadline
-  API->>API: Check first bid against starting price
-  API->>API: Check later bid against last bid plus increment
-  alt All conditions valid
-    API->>DB: Insert accepted bid and update current price
-    API->>DB: COMMIT
-    API-->>UI: 201 Bid accepted
-  else Duplicate, late or invalid bid
-    API->>DB: ROLLBACK
-    API-->>UI: 403 or 409 with reason
+    actor Bidder
+    participant UI as React
+    participant API as Express
+    participant DB as PostgreSQL
+
+    Bidder->>UI: Enter bid amount
+    UI->>API: Submit bid request
+    API->>DB: BEGIN transaction
+    API->>DB: Lock auction row using FOR UPDATE
+    DB-->>API: Return locked auction data
+    API->>DB: Read ownership access commitment and latest bid
+    DB-->>API: Return validation data
+    API->>API: Validate request ID and auction deadline
+    API->>API: Validate bidder eligibility
+    API->>API: Validate bid amount and minimum increment
+
+    alt Bid is valid
+        API->>DB: Insert accepted bid
+        API->>DB: Update current auction price
+        API->>DB: COMMIT transaction
+        DB-->>API: Transaction committed
+        API-->>UI: Bid accepted
+        UI-->>Bidder: Display successful bid
+    else Bid is invalid or duplicate
+        API->>DB: ROLLBACK transaction
+        API-->>UI: Return validation error
+        UI-->>Bidder: Display rejection reason
   end
 ```
 
