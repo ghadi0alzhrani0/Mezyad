@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+dist/
+build/
+coverage/
+*.log
+uploads/
+test-results/
+playwright-report/
+.tmp/
+.DS_Store
+*.pem
+*.key

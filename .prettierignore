@@ -1,0 +1,7 @@
+Stage_*/
+node_modules/
+frontend/dist/
+coverage/
+uploads/
+test-results/
+playwright-report/

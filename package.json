@@ -1,0 +1,37 @@
+{
+  "name": "mezyad",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,web \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "start": "npm start --workspace backend",
+    "build": "node scripts/check-source.mjs && npm run build --workspace frontend",
+    "lint": "eslint .",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "playwright test",
+    "verify:stage3": "node scripts/check-stage3.mjs",
+    "verify:repository": "node scripts/check-repository.mjs",
+    "db:migrate": "node scripts/database.mjs migrate",
+    "db:seed": "node scripts/database.mjs seed",
+    "db:seed:demo": "node scripts/database.mjs demo",
+    "format:check": "prettier --check \"*.js\" \"*.json\" \"scripts/*.mjs\" \"shared/*.js\" \"backend/**/*.js\" \"frontend/**/*.{js,jsx,css,html}\" \".github/workflows/*.yml\"",
+    "format": "prettier --write \"*.js\" \"*.json\" \"scripts/*.mjs\" \"shared/*.js\" \"backend/**/*.js\" \"frontend/**/*.{js,jsx,css,html}\" \".github/workflows/*.yml\""
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.0",
+    "concurrently": "10.0.6",
+    "eslint": "10.12.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
+    "prettier": "3.9.10"
+  }
+}
