@@ -8,9 +8,9 @@ The purpose of this stage is to establish a shared understanding of the project 
 
 The main deliverable of this stage is:
 
-**Report.md**
+**[Report.MD](Report.MD)**
 
-Report.md is the formal Project Charter and serves as the main reference for the project's objectives, stakeholders, scope, risks, and development plan.
+Report.MD is the formal Project Charter and serves as the main reference for the project's objectives, stakeholders, scope, risks, and development plan.
 
 ---
 
@@ -145,13 +145,13 @@ The plan also highlights important dependencies, particularly the need to invest
 
 The `/Stage_2` directory contains the following project documentation:
 
-### README.md
+### README.MD
 
 This document provides an overview of Stage 2, explains the purpose of each task, and describes what is covered in the formal Project Charter.
 
 It acts as a guide to the stage rather than replacing the Project Charter.
 
-### Report.md
+### Report.MD
 
 The formal Stage 2 Project Charter.
 
@@ -169,8 +169,8 @@ It contains the detailed project documentation for:
 
 The two files have different purposes:
 
-* README.md explains the structure and purpose of Stage 2 and gives an overview of what each task covers.
-* Report.md contains the complete and formal answers for those tasks.
+* README.MD explains the structure and purpose of Stage 2 and gives an overview of what each task covers.
+* Report.MD contains the complete and formal answers for those tasks.
 
 The README provides context and navigation, while the Report provides the detailed Project Charter.
 
@@ -182,3 +182,7 @@ The README provides context and navigation, while the Report provides the detail
 * Ghadi Al-Zahrani
 * Aseel Al-Zahrani
 * Tala Al-Hudaibi
+
+## Implementation Alignment
+
+This overview describes the submitted Stage 2 charter and its original 12-week objectives. It does not claim that those milestones have been delivered. The [charter](Report.MD) is preserved, while [Stage 3](../Stage_3/Report.MD) governs current implementation. Its polling approach, deferred anti-sniping, optional Docker and limited description suggestion differ from earlier charter decisions. Candidate banks remain unconfirmed; genuine sandbox access and the commitment operation are unresolved. These differences are recorded for owner review without rewriting the charter.
