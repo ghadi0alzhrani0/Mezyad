@@ -1,5 +1,9 @@
 # Stage 1 Report: Mezyad — High-Value Asset Auction Platform
 
+## Historical Scope Context
+
+This report preserves the Stage 1 research, original concepts, evaluation matrix, team formation and selection rationale. Its settlement, handover, deposit/escrow, identity-verification and anti-sniping proposals describe early exploration, not completed functionality. Current implementation follows [Stage 3](../Stage_3/Report.MD), which ends at the auction result and uses React, Express, PostgreSQL and polling. The academic record below is unchanged.
+
 ## 1. Executive Summary
 
 Buying and selling high-value assets online — real estate, rare cars, luxury goods, premium license plates, or purebred camels — involves a real trust and commitment problem. Buyers and sellers are usually strangers, identities are difficult to verify, and bids can be placed with no real commitment behind them. This can lead to non-committal or fake bidding that disrupts auctions, and it leaves both sides uncertain about whether a deal will actually be honored once the auction ends. Without transparent, real-time visibility into the auction state, participants also have limited confidence in what is actually happening at any given moment, and the process after an auction closes is often unclear.

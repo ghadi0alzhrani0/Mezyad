@@ -41,13 +41,13 @@ This document outlines the requirements, guidelines, and structural framework fo
 * **Scope Boundaries:** Delineate strict In-Scope features (Authentication, Escrow simulation, Real-time WebSocket Bidding Room, Anti-Sniper Engine, Admin Approval Workflow) from Out-of-Scope items (Heavy frontend frameworks like React/Next.js, live banking APIs, AI/ML, and Blockchain).
 
 ### 4. Idea Development Documentation
-* Formalize all research, brainstorming sessions, evaluation matrices, and architectural decisions into a comprehensive Stage 1 Report (`Report.md`) located within the stage directory.
+* Formalize all research, brainstorming sessions, evaluation matrices, and architectural decisions into a comprehensive Stage 1 Report ([Report.MD](Report.MD)) located within the stage directory.
 
 ---
 
 ## Deliverables in Stage 1 Directory (`/Stage_1`)
-* `README.md`: This file, detailing the stage objectives, task breakdown, and academic guidelines.
-* `Report.md`: The exhaustive, technical Stage 1 Report documenting team governance, research findings, evaluation matrices, and refined system architecture scope.
+* [README.MD](README.MD): This file, detailing the stage objectives, task breakdown, and academic guidelines.
+* [Report.MD](Report.MD): The exhaustive, technical Stage 1 Report documenting team governance, research findings, evaluation matrices, and refined system architecture scope.
 
 ---
 
@@ -56,3 +56,11 @@ This document outlines the requirements, guidelines, and structural framework fo
 * Ghadi Al-Zahrani (Frontend UI/UX & Client Logic Lead)
 * Aseel Al-Zahrani (Backend & Real-Time Engine Lead)
 * Tala Al-Hudaibi (Database & Architecture Lead)
+
+## Stage 1 Outcome
+
+Stage 1 delivered team formation, local-market research, structured brainstorming, comparison of Aegis-Grid, Titan-Protocol, SentinX and Mezyad, and a documented evaluation matrix explaining the selection of Mezyad. The complete academic record is [Report.MD](Report.MD).
+
+## Evolution of the Project Scope
+
+The scope boundaries and technical assumptions above record early exploration. Escrow simulation, WebSocket bidding, anti-sniping and the early exclusion of React are historical proposals, not instructions for Stage 4. The current implementation uses React, Express, PostgreSQL and polling, follows the ten-table account model, and ends at the auction result. [Stage 3](../Stage_3/Report.MD) is the authoritative implementation reference. The original ideas and evaluation are preserved.
