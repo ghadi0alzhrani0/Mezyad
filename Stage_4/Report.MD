@@ -196,10 +196,6 @@ flowchart TD
 
 This diagram describes **remaining implementation scope**, not a claim that every page exists.
 
-## 1.5 Source control and traceability
-
-Initial implementation and documentation were introduced in [Pull Request #1](https://github.com/Abeerr0/mezyad/pull/1) and merged into `main`. Subsequent report corrections are committed directly to `main` for the user's urgent submission. This proves source history; it does **not** prove peer review or CI success. Future development should use task branches and reviewed PRs. The Stage 3 report remains unchanged.
-
 ---
 
 # TASK 2 — MONITOR PROGRESS AND ADJUST
@@ -340,8 +336,6 @@ Classify defects as **Critical** (authorization, data corruption, false financia
 | Sprint Planning | [Sprint Plan](Sprint_Plan.md), [Backlog](Product_Backlog.md), Task 0 above | Documented; calendar dates awaiting confirmation |
 | Sprint Reviews | [Sprint Reviews](Sprint_Reviews.md), Task 3 above | Procedure and scripts prepared; actual minutes pending |
 | Retrospectives | [Retrospectives](Retrospectives.md), Task 3 above | Procedure prepared; actual sessions pending |
-| Source repository | [GitHub main](https://github.com/Abeerr0/mezyad) | Available |
-| SCM / commits | [Merged PR #1](https://github.com/Abeerr0/mezyad/pull/1) | Source history available; peer review not established |
 | Progress / metrics | [Progress Tracker](Progress_Tracker.md) | Measurement framework prepared; actual daily metrics pending |
 | Bugs | [Bug Tracker](Bug_Tracker.md) | Known implementation gaps documented separately from tested defects |
 | QA results | [Testing Report](Testing_Report.md), Task 4 above | Test plan; full execution evidence pending |
