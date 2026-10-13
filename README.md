@@ -167,7 +167,7 @@ A successful bank HTTP call does not automatically prove eligibility. No invente
 | Application/database | Implemented / Tested | React/Express application and ten-table PostgreSQL schema; API and browser tests |
 | Local banking mock | Implemented / Tested | Explicit local/test opt-in, failure tests, production rejection |
 | Automated tests | Tested | 65 passed, 0 failed, 1 skipped in the recorded clean Linux run |
-| CI configuration | Implemented | GitHub Actions runs database, API, React and browser checks; remote run is separate from local evidence |
+| CI | Implemented / Tested | [Successful GitHub Actions run](https://github.com/ghadi0alzhrani0/Mezyad/actions/runs/38241578097): database, API, React and browser checks |
 | Genuine banking sandbox | Blocked | Access and contract unavailable |
 | Production deployment / final academic acceptance | Planned | Neither is claimed |
 
