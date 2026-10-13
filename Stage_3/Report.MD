@@ -330,15 +330,15 @@ erDiagram
 
 **Listing approval.** A listing starts with `PENDING_REVIEW`. An admin can change it to `APPROVED` or `REJECTED`. The owner may edit a rejected listing and resubmit it as `PENDING_REVIEW`; an approved listing is locked against material changes once its auction is created. Only an approved listing can be used to create an auction.
 
-**Auction settings.** `current_price` starts at `starting_price` and represents the displayed price before the first accepted bid. The first bid must be at least `starting_price`; later bids must be at least the previous accepted amount plus `minimum_increment`. Each asset can be linked to one auction. The starting price and minimum increment must be positive, and the end time must be later than the start time. The visibility value is `PUBLIC` or `PRIVATE`. Private auction codes are stored as hashes.
+**Auction settings.** `current_price` starts at `starting_price` and represents the displayed price before the first accepted bid. The first bid must be at least `starting_price`; later bids must be at least the previous accepted amount plus `minimum_increment`. Each asset can be linked to one auction. The starting price and minimum increment must be positive, and the end time must be later than the start time. The visibility value is `PUBLIC` or `PRIVATE`. Private auction codes are stored as hashes. The backend should rate-limit invalid access-code attempts (returning HTTP 429 when throttled), avoid disclosing whether a private auction exists, and never log the raw code.
 
 **Private access.** The pair `(auction_id, user_id)` is unique in `private_auction_access`. Private auction details and bidding endpoints verify the user's access before returning protected data.
 
-**Bid commitment.** A user has one commitment record per auction. Add a database `UNIQUE (auction_id, user_id)` constraint to enforce this rule. Its status is checked before a bid is accepted.
+**Bid commitment.** A user has one commitment record per auction. The implementation migration **must include** `UNIQUE (auction_id, user_id)`; a written suggestion without a real constraint is not sufficient. Commitment success is recorded only after a verified authorized provider response. Its status is checked before a bid is accepted.
 
 **Bid consistency.** Bid acceptance checks that the current user is not the owner through the asset relationship. The `request_id` value is unique for each submitted bid request. When accepting a bid, Express starts a PostgreSQL transaction and locks the auction row using `SELECT ... FOR UPDATE`. It then checks the current price, deadline, access, commitment and ownership before saving the bid and updating the auction price together.
 
-**Auction closure.** The closing transaction verifies that `winner_bid_id`, when present, belongs to the same auction; the application should enforce this and the database can enforce it with a composite reference to `bids(auction_id, id)`. An auction stops accepting bids at its end time. The highest accepted bid determines the winning result. If no bids were accepted, `winner_bid_id` remains empty. A unique result per auction prevents duplicate closure records.
+**Auction closure.** The closing transaction verifies that `winner_bid_id`, when present, belongs to the same auction; the application should enforce this and the database **must enforce it** using a composite foreign key `FOREIGN KEY (auction_id, winner_bid_id) REFERENCES bids(auction_id, id)` backed by `UNIQUE (auction_id, id)` on bids. A nullable winner supports auctions without accepted bids. An auction stops accepting bids at its end time. The highest accepted bid determines the winning result. If no bids were accepted, `winner_bid_id` remains empty. A unique result per auction prevents duplicate closure records.
 
 ---
 ## 6. Sequence Diagrams
@@ -444,39 +444,51 @@ sequenceDiagram
 
 ### Flow 4 — Place Bid (Atomic PostgreSQL Transaction)
 
+The auction row is the **serialization point** for bids and closure. Acquire the row lock before reading the latest accepted price or checking the server-side deadline. Under `READ COMMITTED`, re-read current state **after** waiting for the lock; evaluate the deadline using a fresh database timestamp (`clock_timestamp()`) rather than a timestamp captured before the wait. Use a UUID `requestId` to reject or safely resolve retries. Any failed validation rolls back without modifying the price.
+
 ```mermaid
 sequenceDiagram
     actor Bidder
     participant UI as React
     participant API as Express
     participant DB as PostgreSQL
-
     Bidder->>UI: Enter bid amount
-    UI->>API: Submit bid request
-    API->>DB: BEGIN transaction
-    API->>DB: Lock auction row using FOR UPDATE
-    DB-->>API: Return locked auction data
-    API->>DB: Read ownership access commitment and latest bid
-    DB-->>API: Return validation data
-    API->>API: Validate request ID and auction deadline
-    API->>API: Validate bidder eligibility
-    API->>API: Validate bid amount and minimum increment
-
-    alt Bid is valid
-        API->>DB: Insert accepted bid
-        API->>DB: Update current auction price
-        API->>DB: COMMIT transaction
-        DB-->>API: Transaction committed
-        API-->>UI: Bid accepted
-        UI-->>Bidder: Display successful bid
-    else Bid is invalid or duplicate
-        API->>DB: ROLLBACK transaction
-        API-->>UI: Return validation error
-        UI-->>Bidder: Display rejection reason
-  end
+    UI->>API: POST /auctions/:id/bids (amount, requestId)
+    API->>DB: BEGIN
+    API->>DB: SELECT auction FOR UPDATE
+    Note over API,DB: Wait if another bid or closure holds lock
+    DB-->>API: Latest committed auction state
+    API->>DB: Read latest bid, private grant, verified commitment, item owner
+    API->>DB: SELECT clock_timestamp() after lock
+    DB-->>API: Fresh server time and eligibility
+    alt RequestId already accepted
+        API->>DB: ROLLBACK (no second bid)
+        API-->>UI: 409 duplicate or documented idempotent replay
+    else Closed, not started, expired or unauthorized
+        API->>DB: ROLLBACK
+        API-->>UI: 403/409 with safe error
+    else Bid below starting price or required increment
+        API->>DB: ROLLBACK
+        API-->>UI: 409 BID_TOO_LOW
+    else All checks pass
+        API->>DB: INSERT bid (unique request_id)
+        API->>DB: UPDATE auctions.current_price
+        API->>DB: COMMIT
+        API-->>UI: 201 accepted bid and current price
+    end
+    UI-->>Bidder: Show result or rejection
 ```
 
+**Concurrency example:** If two bidders submit SAR 51,000 simultaneously, one acquires the lock first. The other waits, then sees the newly committed highest bid; it must satisfy the new increment or be rejected. A unique `bids.request_id` also prevents duplicate accepted requests. `numeric` values are used for money, avoiding binary floating-point price calculations.
+
+**Security checks:** the bidder must be authenticated, not the seller, granted access if private, and have a **genuinely verified** successful commitment. Do not accept a client-provided commitment status as proof.
+
+
+---
+
 ### Flow 5 — Auction Closure and Result
+
+Closure and bidding use the **same auction-row lock**. The backend rejects late bids using server time even when no user has visited the ended auction. A later detail request finalizes the result, with a unique `auction_results.auction_id` making repeated closure idempotent.
 
 ```mermaid
 sequenceDiagram
@@ -484,38 +496,36 @@ sequenceDiagram
     participant UI as React
     participant API as Express
     participant DB as PostgreSQL
-
     User->>UI: Open auction details
-    UI->>API: Request auction details
-    API->>DB: BEGIN transaction
-    API->>DB: Lock auction row using FOR UPDATE
-    DB-->>API: Return auction status and end time
-
-    alt Auction already closed
-        API->>DB: Read existing auction result
-        DB-->>API: Return saved result
-    else Auction end time has passed
-        API->>DB: Read highest accepted bid
-        DB-->>API: Return winning bid or no bids
-
-        alt Winning bid exists
-            API->>DB: Save winning bid as result
-            API->>DB: Set auction status to CLOSED
+    UI->>API: GET /auctions/:id
+    API->>DB: BEGIN
+    API->>DB: SELECT auction FOR UPDATE
+    DB-->>API: Locked latest auction state
+    API->>DB: SELECT clock_timestamp()
+    alt Auction already CLOSED
+        API->>DB: Read existing auction_results
+        DB-->>API: Previously finalized winner/no-winner
+    else End time reached
+        API->>DB: Read highest accepted bid for this auction
+        alt At least one accepted bid
+            API->>DB: INSERT auction_results (winner_bid_id)
         else No accepted bids
-            API->>DB: Save result without winner
-            API->>DB: Set auction status to CLOSED
+            API->>DB: INSERT auction_results (winner_bid_id NULL)
         end
-    else Auction is still active
-        API->>DB: Read current auction details
-        DB-->>API: Return active auction
+        Note over API,DB: UNIQUE auction_id; winner must belong to this auction
+        API->>DB: UPDATE auctions SET status=CLOSED
+    else Auction still scheduled/active
+        API->>DB: Read current auction state
     end
-
-    API->>DB: COMMIT transaction
-    API-->>UI: Return auction status and result
-    UI-->>User: Display auction details
+    API->>DB: COMMIT
+    API-->>UI: Current status and stable result
+    UI-->>User: Show active auction or final outcome
 ```
 
-The backend rejects bids based on server time even before the closure record is written. The same auction-row lock is used for bid acceptance and closure. The result is saved once and returned consistently on later requests.
+**Repeat requests:** after the first successful closure, subsequent calls read the same persisted result without inserting another row. If a transaction fails, it rolls back and the next request can retry. The winning bid must belong to the closed auction, enforced by a composite database reference as well as application checks.
+
+**Deadline edge case:** a bid transaction holding the auction lock before the deadline may commit before a waiting closure; a bid waiting until after the deadline is revalidated with fresh database time and rejected. This prevents closure/bid races and stale-time acceptance.
+
 
 ---
 
@@ -553,7 +563,7 @@ The backend rejects bids based on server time even before the closure record is 
 | GET | /me/auctions | User | — | 200 auctions owned or participated in | 401 |
 | GET | /me/items | User | — | 200 own listings and review statuses | 401 |
 
-Listing images are accepted with the listing request, validated for file type and size, stored by the backend, and referenced by `item_images.image_url`. The My Activity screen combines `/me/items` and `/me/auctions`. Auction closure is finalized when an ended auction is requested; the server rejects late bids independently of whether closure has been finalized. The endpoints are grouped by user-facing functionality and share one Express backend. The Description Builder is client-side and needs **no endpoint**.
+Listing images **must** be accepted with the listing request, validated for MIME type, extension and size, stored safely by the backend, and referenced by `item_images.image_url`. File limits and storage backend must be specified before implementation; this describes a contract, not a completed upload. The My Activity screen combines `/me/items` and `/me/auctions`. Auction closure is finalized when an ended auction is requested; the server rejects late bids independently of whether closure has been finalized. The endpoints are grouped by user-facing functionality and share one Express backend. The Description Builder is client-side and needs **no endpoint**.
 
 ### 7.3 Sample requests and responses
 
@@ -620,6 +630,23 @@ Listing images are accepted with the listing request, validated for file type an
 
 **Implementation rule:** Do not invent a `proofOfFunds`, `holdFunds`, `transfer`, or `sendSMS` endpoint. Once the real sandbox operation is selected, replace the abstract sequence and add precise request/response examples.
 
+#### Integration contract and decision gate
+
+| Field | Required decision / evidence | Current evidence |
+|---|---|---|
+| Provider name + official API documentation | URL and sandbox product name | **Not selected/verified** |
+| Authorized credentials and scopes | Team-controlled sandbox account; secrets only in environment | **Not verified** |
+| Exact operation | Supported operation and its relationship to bidder commitment | **Not verified** |
+| Consent, callback, token expiry | Document real redirect/webhook/token sequence | **Not verified** |
+| Verification mapping | Which signed/validated response changes commitment to SUCCESS | **Blocked until provider confirmed** |
+| Failure behavior | Timeout, revoked consent, invalid token, provider rejection | Must fail closed |
+| Audit evidence | Redacted request ID, timestamp, sandbox response and test result | **Not supplied** |
+
+**Acceptance gate:** The team must demonstrate one genuine supported provider operation, explain precisely why it is sufficient for the agreed commitment rule, and show both successful and failed outcomes. An unverified sandbox call, invented balance/hold API or mocked response does **not** meet this requirement. Until verified, `POST /auctions/:id/commitment` must not issue `SUCCESS` and the backend must reject bids without a verified commitment.
+
+**Proposed integration interface (internal, not a claim of provider endpoints):** `startCommitment(auctionId, userId)` initiates the approved provider-specific flow; `verifyProviderResult(reference)` validates its outcome and persists `SUCCESS` or `FAILED` only after trusted verification. Never accept the browser's status alone.
+
+
 ---
 
 ## 8. SCM and QA Plans
@@ -685,6 +712,20 @@ This four-week schedule organizes the implementation tasks while the team follow
 | QA-23 | Closing | Auction ends with no page visit | Late bids rejected; result finalized on next access | Planned |
 
 The test plan covers account permissions, private auction access, bid integrity and auction closure.
+
+### 8.5 QA ownership and API/flow traceability
+
+| QA cases | Related flow | API endpoints | Primary QA owner | Required evidence |
+|---|---|---|---|---|
+| QA-01, QA-02 | Flow 1 | `POST /auth/register`, `POST /auth/login` | Tala | 409/401 responses and session assertions |
+| QA-03, QA-04, QA-17, QA-22 | Flow 2 | `/items`, `/items/:id`, `/admin/items/:id/review`, `POST /auctions` | Aseel + Tala | Authorization, resubmission and multipart negative tests |
+| QA-05–QA-07 | Flow 3 | `/auctions/:id/access`, `/auctions/:id/commitment` | Tala | Unauthorized access, rate limiting and genuine provider evidence |
+| QA-03A/B, QA-08–QA-11, QA-18/19 | Flow 4 | `POST /auctions/:id/bids`, `GET /auctions/:id/bids` | Tala + Abeer | Owner check, duplicate request, two-client concurrent transaction logs |
+| QA-12, QA-13, QA-20, QA-23 | Flow 5 | `GET /auctions/:id` | Abeer + Tala | Idempotent closure and correct winner FK assertions |
+| QA-14–QA-16, QA-21 | Cross-flow | `GET /auctions`, `/me/items`, `/me/auctions` | Aseel | Public/private browser E2E recordings and UI state assertions |
+
+**Test status:** All cases remain *planned* until actually executed. Owners are assignments, not claims of completed QA.
+
 
 ---
 

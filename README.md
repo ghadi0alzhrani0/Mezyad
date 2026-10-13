@@ -1,60 +1,36 @@
 # Mezyad | مِزياد
 
-**Mezyad** is a planned online auction platform for high value and rare items. It brings several auction categories together and lets users follow an item from an active auction to a completed sale.
+Mezyad is a web-based auction platform for high-value and rare assets.
 
-**Project status:** Planning. The features below describe the proposed MVP, not completed software.
+## Project stages
 
-## Auction Categories
+| Stage | Guide | Full report |
+|---|---|---|
+| 1 — Idea Development | [README](Stage_1/README.MD) | [Report](Stage_1/Report.MD) |
+| 2 — Project Charter | [README](Stage_2/README.MD) | [Report](Stage_2/Report.MD) |
+| 3 — Technical Documentation | [README](Stage_3/README.MD) | [Report](Stage_3/Report.MD) |
+| 4 — MVP Development | [README](Stage_4/README.md) | [Report](Stage_4/Report.MD) |
 
-- Camels.
-- Newly built, unsold properties.
-- High end handbags and rare collectibles.
-- Distinctive vehicle registration plates.
-- Rare, limited production, and discontinued vehicle models.
+## Platform
 
-## How It Will Work
+Sellers submit asset listings for administrator review. Approved listings may be offered through public or private auctions. Eligible participants complete a bid commitment step before bidding. The server validates bid amounts, eligibility and deadlines, then records the winner or a no-winner outcome.
 
-A seller creates an auction listing with item details, images, a starting price, and an auction period. Buyers browse listings and place bids while the auction is active.
+## Technology
 
-When bidding ends and a transaction begins, the item changes to **Pending Transaction**. It remains visible but no longer accepts bids. The seller confirms payment receipt, and the buyer confirms item receipt. The item is then marked **Sold** and removed from auction listings.
+- React frontend
+- Node.js / Express REST API
+- PostgreSQL database
+- Periodic REST polling for auction updates
+- Saudi Open Banking sandbox for bid commitment, subject to authorized provider access
 
-We still need to define the process for cancelling an incomplete transaction or listing the item again.
-
-## Proposed MVP Features
-
-- User registration and login.
-- Auction listings with images and item details.
-- Browsing by category.
-- Starting prices and auction periods.
-- Bidding and display of the highest bid.
-- Auction closure and transaction status.
-- Seller and buyer sale confirmations.
-
-## Payments and Verification
-
-Buyers and sellers may arrange an in person inspection and payment or payment by cheque. The proposed first version does not depend on electronic payment processing.
-
-We would like to explore **Apple Pay** and **Nafath seller identity verification** if the available time and integration requirements allow it. We also need to define how sellers would prove ownership of listed items. These are optional additions to the first MVP.
-
-## Project Stages
-
-| Stage | Main deliverable |
-|---|---|
-| 1. Idea Development | Stage 1 Report |
-| 2. Project Charter Development | Project Charter |
-| 3. Technical Documentation | Technical documentation |
-| 4. MVP Development | Working MVP |
-| 5. Project Closure | Final project materials |
+The MVP does not process real payments, escrow or asset handover.
 
 ## Team
 
-1. Ghadi Alzhrani
-2. Abeer Alsayari
-3. Tala Alhudhaybi
-4. Aseel Alzhrani
+Abeer Al-Saiari · Ghadi Al-Zahrani · Aseel Al-Zahrani · Tala Al-Hudaibi
 
-We discuss project decisions together through meetings at the academy and on Discord.
+## Source code
 
-## Technology and Setup
-
-The technology stack, installation steps, and usage instructions will be added during technical planning and development.
+- [Backend](backend/)
+- [Frontend](frontend/)
+- [Database](database/)

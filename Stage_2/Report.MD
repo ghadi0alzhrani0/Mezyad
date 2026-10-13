@@ -2,15 +2,15 @@
 
 ## Executive Summary
 
-**Mezyad — High-Value Asset Auction Platform** is an online auction platform for high-value assets, focused on controlled auction participation, bidder commitment, and reliable real-time bidding.
+**Mezyad — High-Value Asset Auction Platform** is an online auction platform for high-value assets, focused on controlled auction participation, bidder commitment, and reliable server-validated bidding.
 
-**The central problem.** High-value online auctions require clear asset information, controlled participation, a defined commitment step for bidders, dependable real-time bidding, and a predictable closing process. For assets such as vehicles or real estate, bidders need enough detail to evaluate the asset, sellers may want to decide who can enter the auction, and every participant needs to see the same live price and the same ending. When listings are unclear, participation is uncontrolled, or the live auction state is inconsistent, the auction becomes difficult to rely on.
+**The central problem.** High-value online auctions require clear asset information, controlled participation, a defined commitment step for bidders, dependable server-validated bidding, and a predictable closing process. For assets such as vehicles or real estate, bidders need enough detail to evaluate the asset, sellers may want to decide who can enter the auction, and every participant needs to see the same live price and the same ending. When listings are unclear, participation is uncontrolled, or the live auction state is inconsistent, the auction becomes difficult to rely on.
 
-**Why this idea was selected.** Stage 1 selected Mezyad because it addresses a meaningful problem while remaining achievable as a graduation MVP. The project concentrates its effort on the auction workflow rather than on activities surrounding a sale. This suits a four-person team working over 12 weeks and allows the team to build the auction experience in depth, especially real-time bidding, instead of spreading effort across unrelated features.
+**Why this idea was selected.** Stage 1 selected Mezyad because it addresses a meaningful problem while remaining achievable as a graduation MVP. The project concentrates its effort on the auction workflow rather than on activities surrounding a sale. This suits a four-person team working over 12 weeks and allows the team to build the auction experience in depth, especially server-validated bidding with REST polling, instead of spreading effort across unrelated features.
 
 **The approved workflow.** The MVP follows one defined path:
 
-Registration / Login → Seller Creates Listing → Structured Asset Information → Admin Review & Approval → Public or Private Auction → Bid Commitment → Bank API Integration through a Saudi Open Banking Sandbox → Live Real-Time Bidding → Anti-Sniping → Auction Closure → Winner Determination / Auction Result
+Registration / Login → Seller Creates Listing → Structured Asset Information → Admin Review & Approval → Public or Private Auction → Bid Commitment → Bank API Integration through a Saudi Open Banking Sandbox → Server-Validated Bidding with REST Polling → server-side deadline enforcement → Auction Closure → Winner Determination / Auction Result
 
 **Boundaries.** Mezyad is a student graduation MVP. It does not move real money, does not use live customer banking data, does not provide production financial services, and makes no production-grade legal, financial, or security guarantees. The planned bank integration will use an official sandbox/testing environment with test data. The workflow ends with a recorded winner and auction result, and nothing after that point is part of the project.
 
@@ -32,7 +32,7 @@ Mezyad provides a focused auction experience for high-value assets. Its purpose 
 
 **3. A defined commitment step for bidders.** Bidders should reach the live auction through a deliberate, controlled step rather than by simply opening a page. Each bidder completes a Bid Commitment step before bidding, connected to an official Saudi Open Banking sandbox integration. Bid Commitment is a controlled participation checkpoint. It does not claim that a bidder is guaranteed to be serious or to complete any later transaction. It belongs in the MVP because it links the required bidder commitment step to the auction workflow and satisfies the project's required bank API integration.
 
-**4. Dependable real-time bidding.** If bidders see different prices, or a bid is accepted incorrectly, the auction cannot be trusted. Bids are validated on the server, and the highest bid, bid history, and timer are updated live for all participants. Anti-sniping extends the auction when a valid bid arrives near the end. This is the core of the platform and receives the largest share of implementation effort.
+**4. Dependable server-validated bidding with REST polling.** If bidders see different prices, or a bid is accepted incorrectly, the auction cannot be trusted. Bids are validated on the server, and the highest bid, bid history, and timer are updated live for all participants. Server-side deadline enforcement enforces the server-side auction deadline. This is the core of the platform and receives the largest share of implementation effort.
 
 **5. Predictable auction closure.** An auction needs a clear, unambiguous ending. At the final valid end time, bidding stops, the winner is determined from valid bids, and the result is recorded and displayed. This completes the auction workflow without extending into activities that happen after the auction.
 
@@ -42,7 +42,7 @@ Mezyad provides a focused auction experience for high-value assets. Its purpose 
 
 **Objective 1 — End-to-End MVP**
 
-By the end of Week 10, demonstrate the complete approved MVP workflow across both a public-auction scenario and a private-auction scenario, including seller listing and admin approval, bidder commitment, bank API integration, real-time bidding, anti-sniping, auction closure, and winner determination.
+By the end of Week 10, demonstrate the complete approved MVP workflow across both a public-auction scenario and a private-auction scenario, including seller listing and admin approval, bidder commitment, bank API integration, server-validated bidding with REST polling, server-side deadline enforcement, auction closure, and winner determination.
 
 * *What is delivered:* one integrated MVP that runs the full workflow for both auction types.
 * *Why Week 10:* Stage 4 runs from Week 6 to Week 10, so this is the point at which implementation and integration must be complete, leaving Weeks 11–12 for testing.
@@ -50,15 +50,15 @@ By the end of Week 10, demonstrate the complete approved MVP workflow across bot
 
 **Objective 2 — Core Auction Functionality**
 
-By the end of Week 9, implement and demonstrate validated bid submission, bid history, live auction updates, auction timing, and anti-sniping.
+By the end of Week 9, implement and demonstrate validated bid submission, bid history, live auction updates, auction timing, and server-side deadline enforcement.
 
 * *What is delivered:* the core auction functionality, working before the remaining features are integrated.
 * *Why Week 9:* completing the core one week before the full MVP leaves Week 10 for the remaining approved features (commitment, bank API integration, Smart Auction Assistant, closure, and winner determination), gives early warning if the auction logic needs rework, and allows time for the bank sandbox dependency, which is requested early, to be resolved before final integration.
-* *Measure:* with at least two users bidding on the same auction, valid bids are accepted and invalid bids are rejected, all users see updates live, and a valid bid placed in the final period extends the end time.
+* *Measure:* with at least two users bidding on the same auction, valid bids are accepted and invalid bids are rejected, all users see updates live, and late bids are rejected based on server time.
 
 **Objective 3 — Validation**
 
-By the end of Week 12, complete structured testing and validation covering authentication, listing creation, admin approval, public and private access, commitment, bank API integration, real-time bidding, anti-sniping, auction closure, winner determination, Smart Auction Assistant, and relevant edge cases.
+By the end of Week 12, complete structured testing and validation covering authentication, listing creation, admin approval, public and private access, commitment, bank API integration, server-validated bidding with REST polling, server-side deadline enforcement, auction closure, winner determination, Smart Auction Assistant, and relevant edge cases.
 
 * *What is delivered:* a tested MVP with documented test results.
 * *Why Week 12:* testing follows implementation, so Weeks 11–12 are reserved for it, together with bug fixing and final documentation.
@@ -85,14 +85,14 @@ Mezyad has three product users: bidders/buyers, sellers, and administrators. Eac
 * Bid Commitment, a required participation step before bidding.
 * The bank sandbox interaction, which is part of the commitment flow and uses test/sandbox data.
 * The live auction view, which shows the current highest bid, bid history, and auction timer.
-* Real-time updates, so the displayed price and status follow the auction as bids arrive.
-* Anti-sniping, which gives active bidders additional time to respond when a valid bid is received near the scheduled closing time.
+* Periodically refreshed updates, so the displayed price and status follow the auction as bids arrive.
+* Server-side deadline enforcement, which gives active bidders additional time to respond when a valid bid is received near the scheduled closing time.
 * The auction result, shown when the auction closes.
 * The Smart Auction Assistant's bidder-side functions: search assistance, auction activity summary, bidding activity insights, and auction summary. These present information the platform already holds. The bidder makes every bidding decision.
 
 **Why their role is needed.** Bidders are the main users during the auction phase, and an auction has no meaning without them. The platform must therefore make the state of the auction clear to them: what is being sold, whether they may enter, what the current price is, how much time remains, and when and how the auction ends.
 
-**Place in the workflow.** Bidders take part from Public or Private Auction access through Bid Commitment, Bank API Integration through the Saudi Open Banking Sandbox, Live Real-Time Bidding, Anti-Sniping, and Auction Closure, and they receive the Auction Result. A bidder can place bids only after gaining access to the auction and completing the commitment step.
+**Place in the workflow.** Bidders take part from Public or Private Auction access through Bid Commitment, Bank API Integration through the Saudi Open Banking Sandbox, Server-Validated Bidding with REST Polling, server-side deadline enforcement, and Auction Closure, and they receive the Auction Result. A bidder can place bids only after gaining access to the auction and completing the commitment step.
 
 #### Sellers
 
@@ -147,8 +147,8 @@ The table below is the team's agreed working structure. It identifies the member
 | Responsibility Area | Members | Responsibilities |
 | :--- | :--- | :--- |
 | **Database** | Abeer + Tala | Database design and data model for users, listings, auctions, commitments, bids, and auction results; database integration with the backend; making sure the data needed by the auction workflow is present and well organized |
-| **Backend** | Abeer + Ghadi | Server-side logic; authentication and authorization; listing logic; admin approval logic; public/private auction access; bid validation and auction rules; real-time auction logic; anti-sniping; auction closure and winner determination; bank API integration; Smart Auction Assistant integration |
-| **Frontend** | Aseel + Ghadi | Responsive web interface; bidder, seller, and admin interfaces; listing creation UI; auction UI with live highest bid, bid history, and auction timer; real-time state presentation; public/private auction access interfaces |
+| **Backend** | Abeer + Ghadi | Server-side logic; authentication and authorization; listing logic; admin approval logic; public/private auction access; bid validation and auction rules; transactional auction logic; server-side deadline enforcement; auction closure and winner determination; bank API integration; Smart Auction Assistant integration |
+| **Frontend** | Aseel + Ghadi | Responsive web interface; bidder, seller, and admin interfaces; listing creation UI; auction UI with live highest bid, bid history, and auction timer; polled auction-state presentation; public/private auction access interfaces |
 | **Figma & UI/UX Design** | Ghadi | Designs the website screens and user flows in Figma, and prepares interface layouts and interaction details for frontend implementation |
 | **Task Review & Cross-Task Integration** | Tala + Aseel | Reviewing completed work; checking consistency between tasks; checking that requirements are reflected correctly; checking integration between frontend, backend, and database; identifying missing or conflicting work; helping detect issues before final integration |
 | **Task Allocation, Technical Approach & Docker Operation** | Abeer + Ghadi | Task allocation; organizing implementation dependencies; coordinating the technical approach; keeping work aligned with the approved scope; operating the Docker development environment; maintaining a consistent environment for the team; supporting reliable project setup and demonstration |
@@ -221,19 +221,19 @@ The bank sandbox interaction is a supporting integration inside the Bid Commitme
 * *Access status:* sandbox access has not yet been obtained. No credentials are held, and no specific API endpoint has been selected.
 * *Decided in Stage 3:* the exact API operation will be selected after reviewing the provider's documentation and the access the team is granted.
 
-**Real-Time Bidding**
+**Server-Validated Bidding**
 
-The auction supports bid submission, bid validation, the current highest bid, bid history, an auction timer, auction start and end rules, live auction state, real-time updates to participants, and consistent handling of concurrent bids.
+The auction supports bid submission, bid validation, the current highest bid, bid history, an auction timer, auction start and end rules, live auction state, periodic REST polling updates to participants, and consistent handling of concurrent bids.
 
-Live auction state matters because bidders act on the current price and remaining time, so every participant needs to see the same current state as the auction progresses. The server is authoritative for auction state and bid validation, so the client cannot decide auction outcomes, and bids that arrive close together are handled consistently. Bidding opens for a bidder only after the commitment step is complete, and the bids recorded here are what the closing step later uses to determine the winner. Real-time bidding is the core of an auction platform and of Mezyad, and it therefore receives significant implementation and testing effort. Its boundary at this stage is functional: the technical mechanisms used to deliver these behaviors are defined in Stage 3.
+Live auction state matters because bidders act on the current price and remaining time, so every participant needs to see the same current state as the auction progresses. The server is authoritative for auction state and bid validation, so the client cannot decide auction outcomes, and bids that arrive close together are handled consistently. Bidding opens for a bidder only after the commitment step is complete, and the bids recorded here are what the closing step later uses to determine the winner. Periodically refreshed bidding is the core of an auction platform and of Mezyad, and it therefore receives significant implementation and testing effort. Its boundary at this stage is functional: the technical mechanisms used to deliver these behaviors are defined in Stage 3.
 
-**Anti-Sniping**
+**server-side deadline enforcement**
 
 If a valid bid is received during the defined final period of an auction, the auction end time is automatically extended. Its purpose is to give active bidders additional time to respond to bids received near the scheduled closing time. It belongs in scope because closing behavior is a central part of the auction experience, and it is limited to this single rule. The exact threshold and extension duration will be defined in Stage 3.
 
 **Auction Closure and Winner Determination**
 
-When an auction reaches its final valid end time, bidding stops, the winner is determined from the valid bids, the auction status changes to closed, and the result is recorded and displayed. The final end time includes any anti-sniping extension. This belongs in scope because every auction needs a clear and deterministic ending. The workflow ends at the auction result and includes no payment, settlement, handover, or later steps.
+When an auction reaches its final valid end time, bidding stops, the winner is determined from the valid bids, the auction status changes to closed, and the result is recorded and displayed. The final end time includes any server-side deadline enforcement extension. This belongs in scope because every auction needs a clear and deterministic ending. The workflow ends at the auction result and includes no payment, settlement, handover, or later steps.
 
 **Smart Auction Assistant**
 
@@ -255,7 +255,7 @@ The assistant belongs in scope because sellers may have the asset details but no
 
 The MVP includes a responsive web interface, structured testing and validation, and the documentation required for the project. The testing strategy is defined in Stage 3.
 
-**Overall scope boundary.** The in-scope items form one connected workflow: listing creation, review, public or private auction, bidder commitment, real-time bidding, auction closure, and the winner and result. Each item depends on the one before it, and together they make up the complete auction experience that the MVP delivers. Any feature that does not serve this workflow is outside the scope.
+**Overall scope boundary.** The in-scope items form one connected workflow: listing creation, review, public or private auction, bidder commitment, server-validated bidding with REST polling, auction closure, and the winner and result. Each item depends on the one before it, and together they make up the complete auction experience that the MVP delivers. Any feature that does not serve this workflow is outside the scope.
 
 ### Out of Scope
 
@@ -291,10 +291,10 @@ This section identifies the main risks of the Mezyad MVP across technology, exte
 | # | Risk | Impact | Level | Mitigation |
 | :-- | :--- | :--- | :--- | :--- |
 | 1 | Concurrent bids cause inconsistent auction state | Wrong highest bid or winner; unreliable auction results | High | The server remains authoritative for bid validation and auction state, so clients cannot independently decide whether a bid is valid. The bid-handling rules will be defined in Stage 3, and simultaneous-bid scenarios will be tested to reduce the risk of inconsistent results. |
-| 2 | Real-time updates are delayed or missed | Bidders see outdated prices or miss the closing | Medium | Because the server holds the true auction state, a client that falls behind can be corrected by refreshing that state. Reconnect and refresh handling lets a bidder recover after a dropped connection, and network interruption cases will be tested. |
+| 2 | Periodically refreshed updates are delayed or missed | Bidders see outdated prices or miss the closing | Medium | Because the server holds the true auction state, a client that falls behind can be corrected by refreshing that state. Reconnect and refresh handling lets a bidder recover after a dropped connection, and network interruption cases will be tested. |
 | 3 | Bank sandbox access is delayed or the API does not support the desired operation | Commitment flow blocked or delayed; Week 10 integration at risk | High | Sandbox access has not yet been obtained, so it will be requested early, since approval time is outside the team's control. The provider documentation will be reviewed in Stage 3 so the commitment flow is designed around what the sandbox supports rather than what is assumed. Bank logic will sit behind one backend service, so a change of operation or provider affects one component, and Al Rajhi remains the backup candidate. Only sandbox/test data is used. |
 | 4 | Unauthorized access to private auctions | Users without the code view or bid in private auctions | Medium | The access code is validated and authorization is checked on the server. The frontend is never the only protection, because hiding an item in the interface does not prevent a direct request. Unauthorized access attempts will be tested. As a student MVP, Mezyad makes no claim of production-grade security certification. |
-| 5 | Incorrect anti-sniping timing | Unpredictable end times, or bids accepted or rejected incorrectly near closing | Medium | Time is calculated on the server only, so differences between client clocks cannot affect the end time. The threshold and extension rule will be defined clearly in Stage 3, and boundary conditions near the threshold and the closing time will be tested. |
+| 5 | Incorrect server-side deadline enforcement timing | Unpredictable end times, or bids accepted or rejected incorrectly near closing | Medium | Time is calculated on the server only, so differences between client clocks cannot affect the end time. The threshold and extension rule will be defined clearly in Stage 3, and boundary conditions near the threshold and the closing time will be tested. |
 | 6 | Frontend, backend, and database do not integrate smoothly | Broken workflow, delayed dependencies, and late rework that threatens the Week 9 and Week 10 milestones | Medium | Shared API contracts and the database structure will be agreed in Stage 3 so each part is built against the same expectations. Parts are integrated continuously rather than only at the end, and the Task Review & Cross-Task Integration area checks that they work together. |
 | 7 | Scope creep | Core auction features left incomplete; schedule pressure | Medium | This Stage 2 scope is the baseline for all later stages. Additions that do not support the auction workflow are rejected, and scope is reviewed at each checkpoint so effort stays on the core features. The Smart Auction Assistant stays limited to its six lightweight functions. |
 | 8 | Demo or deployment fails | Unconvincing final presentation | Medium | Docker provides the same environment on every machine, seeded test data makes the demonstration repeatable, and the full workflow is rehearsed before the presentation. A backup demo environment and data are kept in case the primary one fails. |
@@ -304,9 +304,9 @@ This section identifies the main risks of the Mezyad MVP across technology, exte
 The mitigations above are supported by practices the team applies throughout development. These are risk-reduction measures, not additional risks.
 
 * **Server-side validation.** Critical auction rules (bid validation, access control for private auctions, auction timing, and winner determination) are enforced on the server, so no result depends on the user's browser. This reduces Risks 1, 4, and 5.
-* **Automated and scenario-based testing.** The team tests concurrent bids, invalid bids, private-auction access with and without the code, closing-time boundaries, anti-sniping extensions, and network interruptions. Tests are run as each feature is completed, not only in Weeks 11–12, so problems are found while there is still time to fix them. This reduces Risks 1, 2, 4, and 5.
+* **Automated and scenario-based testing.** The team tests concurrent bids, invalid bids, private-auction access with and without the code, closing-time boundaries, server-side deadline enforcement extensions, and network interruptions. Tests are run as each feature is completed, not only in Weeks 11–12, so problems are found while there is still time to fix them. This reduces Risks 1, 2, 4, and 5.
 * **Continuous integration between frontend, backend, and database.** Parts are connected as they are built instead of leaving integration to the end. This reduces Risk 6 and protects the Week 9 and Week 10 milestones.
-* **Stage 3 technical planning.** API contracts, database structure, auction rules, anti-sniping parameters, and the selected bank sandbox operation are settled in Stage 3, before implementation begins. This reduces Risks 1, 3, 5, and 6.
+* **Stage 3 technical planning.** API contracts, database structure, auction rules, server-side deadline enforcement parameters, and the selected bank sandbox operation are settled in Stage 3, before implementation begins. This reduces Risks 1, 3, 5, and 6.
 * **Early bank dependency checking.** Sandbox access and provider limitations are outside the team's direct control, so access is requested early and the documentation is reviewed in Stage 3. If the primary candidate (SABB) proves unavailable or unsuitable, the backup candidate (Al Rajhi) can be considered. This reduces Risk 3.
 * **Docker.** A shared Docker environment keeps development consistent across team members and supports a reliable demonstration. This reduces Risks 6 and 8.
 * **Seeded, repeatable test data.** The same test data is used for testing and for the demonstration, so results can be reproduced. This reduces Risk 8.
@@ -314,7 +314,7 @@ The mitigations above are supported by practices the team applies throughout dev
 * **Scope checkpoints.** The team compares current work against the approved Stage 2 scope at each checkpoint and rejects additions that do not support the auction workflow. This reduces Risk 7.
 * **Demo rehearsal and backup preparation.** The full workflow is rehearsed before the final presentation, and backup data and a backup environment are prepared. This reduces Risk 8.
 
-**Monitoring.** The team monitors risks through the existing milestones. At the end of Week 5, it confirms that the Stage 3 decisions those risks depend on (including the bank sandbox operation and access status) are documented. At the end of Week 9, it checks that core auction functionality, including bid handling, real-time updates, and anti-sniping, passes its scenario tests. At the end of Week 10, it checks that the full workflow runs end to end. During Weeks 11–12, it repeats the tests and rehearses the demonstration. If a check fails or a dependency is delayed, the team reviews the affected work at the next checkpoint, reassigns effort across responsibility areas where needed, and keeps the core auction workflow as the priority.
+**Monitoring.** The team monitors risks through the existing milestones. At the end of Week 5, it confirms that the Stage 3 decisions those risks depend on (including the bank sandbox operation and access status) are documented. At the end of Week 9, it checks that core auction functionality, including bid handling, periodic REST polling updates, and server-side deadline enforcement, passes its scenario tests. At the end of Week 10, it checks that the full workflow runs end to end. During Weeks 11–12, it repeats the tests and rehearses the demonstration. If a check fails or a dependency is delayed, the team reviews the affected work at the next checkpoint, reassigns effort across responsibility areas where needed, and keeps the core auction workflow as the priority.
 
 ---
 
@@ -328,8 +328,8 @@ The plan maps the five official project stages onto the 12-week schedule and ide
 | :--- | :--- | :--- | :--- |
 | **Stage 1 — Idea Development** (Completed) | Generate and evaluate ideas and select the MVP concept | Week 1 | Selected concept: Mezyad |
 | **Stage 2 — Project Charter Development** (Current) | Fix the purpose, objectives, stakeholders, responsibilities, scope, risks, and plan before design begins | Weeks 2–3 | Project Charter (this document) |
-| **Stage 3 — Technical Documentation** | Document how the approved scope will be built: requirements and user stories, UI/UX, architecture, database design, API design, auction rules, anti-sniping design, bank API planning, Smart Auction Assistant design, and testing strategy | Weeks 4–5 | Technical documentation set |
-| **Stage 4 — MVP Development** | Build and connect the approved features: authentication, listings, admin approval, public/private auctions, bidder commitment, bank API integration, real-time bidding, anti-sniping, Smart Auction Assistant, auction closure, and winner determination | Weeks 6–10 | Functional Mezyad auction MVP |
+| **Stage 3 — Technical Documentation** | Document how the approved scope will be built: requirements and user stories, UI/UX, architecture, database design, API design, auction rules, server-side deadline enforcement design, bank API planning, Smart Auction Assistant design, and testing strategy | Weeks 4–5 | Technical documentation set |
+| **Stage 4 — MVP Development** | Build and connect the approved features: authentication, listings, admin approval, public/private auctions, bidder commitment, bank API integration, server-validated bidding with REST polling, server-side deadline enforcement, Smart Auction Assistant, auction closure, and winner determination | Weeks 6–10 | Functional Mezyad auction MVP |
 | **Stage 5 — Project Closure** | Complete the project: final system testing, bug fixing, final documentation, and the final presentation | Weeks 11–12 | Tested MVP, final documentation, and presentation |
 
 ### Major Milestones
@@ -338,7 +338,7 @@ The plan maps the five official project stages onto the 12-week schedule and ide
 | :--- | :--- |
 | **End of Week 3** | Project Charter completed |
 | **End of Week 5** | Technical documentation completed |
-| **End of Week 9** | Core auction functionality working: listings, admin approval, public/private auctions, bidding, bid history, real-time updates, anti-sniping (Objective 2) |
+| **End of Week 9** | Core auction functionality working: listings, admin approval, public/private auctions, bidding, bid history, periodic REST polling updates, server-side deadline enforcement (Objective 2) |
 | **End of Week 10** | Full approved MVP integrated: commitment, bank API integration, Smart Auction Assistant, closure, winner determination (Objective 1) |
 | **End of Week 12** | Final testing, bug fixing, final documentation, and presentation completed (Objective 3) |
 
@@ -346,7 +346,7 @@ The plan maps the five official project stages onto the 12-week schedule and ide
 
 The plan follows a dependency chain: technical documentation, then implementation, then integration, then final system testing. Technical documentation comes first because the database, backend, and frontend depend on shared decisions such as data structures and API contracts. Implementation follows so that the team builds against agreed designs rather than assumptions. The transition from Stage 3 to Stage 4 is therefore a hand-off: Stage 2 fixes what will be built, Stage 3 settles how it will be built, and Stage 4 starts from those documented decisions rather than from open design questions. Final system testing occurs after the MVP is integrated, because it needs the complete workflow to be running. Feature-level testing and validation are performed throughout development, as each feature is completed, so that problems are found while there is still time to fix them.
 
-Within Stage 4, the core auction is built first (Weeks 6–9), because listings, approval, bidding, live updates, and anti-sniping form the foundation the other features attach to. Bidder commitment, bank API integration, the Smart Auction Assistant, closure, and winner determination are integrated in Week 10, since they depend on the auction core being in place. This ordering also gives the team an early check on the most demanding part of the project, real-time bidding.
+Within Stage 4, the core auction is built first (Weeks 6–9), because listings, approval, bidding, live updates, and server-side deadline enforcement form the foundation the other features attach to. Bidder commitment, bank API integration, the Smart Auction Assistant, closure, and winner determination are integrated in Week 10, since they depend on the auction core being in place. This ordering also gives the team an early check on the most demanding part of the project, server-validated bidding with REST polling.
 
 Bank API access is treated as an early dependency even though the integration is implemented later. Sandbox access depends on the provider rather than on the team, has not yet been obtained, and the exact API operation cannot be selected until the documentation and access are reviewed. Requesting access early and settling the operation in Stage 3 reduces the chance that the commitment flow is blocked when implementation needs it.
 
@@ -359,3 +359,6 @@ This Project Charter is now complete. Together, Tasks 0 to 4 provide the project
 **Document Status:** Stage 2 Project Charter — Final
 
 The charter creates a baseline for implementation. It fixes the objectives the team will be measured against, the stakeholders the system serves, the responsibilities each member holds, the scope the team will build, the risks the team will monitor, and the schedule the team will follow. It defines what will be built and why, while how it will be built is decided in Stage 3. Later stages work from this baseline rather than reopening these decisions.
+
+
+---
