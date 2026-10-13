@@ -1,20 +1,22 @@
 # Stage 4 — Sprint Monitoring Dashboard
 
-**Snapshot: 12 October 2026.** This is a source-code and documentation audit, **not** a fabricated record of completed historical sprints.
+**Snapshot: 13 October 2026.** Includes local and GitHub CI account execution
+evidence for the published change set. Full marketplace acceptance remains pending;
+historical sprint completion is not inferred from this work.
 
 ## Current engineering snapshot
 
 | Area | Source exists? | Acceptance verified? | Next gate |
 |---|---|---|---|
-| PostgreSQL schema + seed | Yes | No | Fresh DB migration |
-| Authentication + permissions API | Yes | No | QA-01–03B |
+| PostgreSQL schema + seed | Yes | Fresh migration + category seed passed locally; full integrity QA pending | FK/integrity assertions |
+| Authentication + permissions API | Yes | QA-01/02/03 + session checks passed locally and in GitHub CI | QA-03A/B remain pending |
 | Listing and admin review API | Yes | No | QA-04/17 |
 | Image upload | No | No | Implement + QA-22 |
 | Public/private auction API | Yes | No | QA-05/06 |
 | Commitment provider | Fail-closed placeholder | No | Official sandbox integration |
 | Atomic bidding + closure API | Yes | No | QA-08–13, QA-18–20, QA-23 |
-| React frontend | Partial | No | Full UI and E2E |
-| QA execution | Initial health test source | No | Logs and actual run |
+| React frontend | Partial | Approved Figma account UI, item identity/navigation, polling and countdown tested locally and in GitHub CI | Full listing/private/bidding UI and E2E |
+| QA execution | HTTP/PostgreSQL account/catalog + React suites | 22 backend runner entries + 30 frontend tests passed locally and in GitHub CI | Remaining Stage 3 QA cases |
 | Reviews and retros | Templates | No | Actual meeting evidence |
 
 ## Actual sprint metrics

@@ -11,10 +11,19 @@
 | GAP-03 | Critical blocker | Genuine bank sandbox commitment unverified | Abeer, Ghadi | QA-07 + provider evidence | Blocked |
 | GAP-04 | High | Concurrency and closure untested against PostgreSQL | Abeer, Tala; QA | QA-09–13/23 | Open |
 | GAP-05 | Medium | Private access brute-force protection needs verification | Backend + QA | Rate-limit negative test | Open |
+| GAP-06 | Owner review | Figma phone input has no Stage 3 registration/storage contract; field disabled | Project owner | Decide scope separately without altering Stage 3 here | Pending Owner Review |
+| GAP-07 | Owner review | Figma password recovery action has no Stage 3 recovery API; action disabled | Project owner | Approved recovery requirements and contract | Pending Owner Review |
 
 ## Verified runtime bugs
 
-No executed runtime bug reports with reproduction evidence have been supplied. **This does not mean zero bugs.**
+**BUG-01 — Auction destination lost on login reload.** Observed locally on
+13 October 2026 in the working tree based on `86028b4`. Steps: open the Porsche
+auction as a guest, choose to bid, reload the login page, then sign in. Expected:
+return to the Porsche auction. Actual: the account page opened because the
+destination existed only in a React ref. Fix: retain a validated auction UUID
+in the login/registration URL. Retest: the automated reload regression and the
+real browser journey both returned to the same Porsche ID and image.
+**Status: Published fix; verified locally and by the GitHub CI regression test.**
 
 ## Defect entry template
 

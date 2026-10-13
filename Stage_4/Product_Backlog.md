@@ -2,16 +2,16 @@
 
 **Baseline:** [Stage 3](../Stage_3/Report.MD) · **Main submission:** [Stage 4 Report](Report.MD)
 
-**Status key:** `SOURCE` = source code exists but acceptance unverified; `TODO` = not implemented; `BLOCKED` = external dependency; `PENDING QA` = test evidence missing. None is equivalent to `DONE`.
+**Status key:** `SOURCE` = source code exists but acceptance unverified; `LOCAL TESTED` = local implementation/test evidence exists; `CI TESTED` = published implementation has passing GitHub checks, with full marketplace acceptance still pending; `TODO` = not implemented; `BLOCKED` = external dependency; `PENDING QA` = test evidence missing. None is equivalent to `DONE`.
 
 | ID | Sprint | Priority | Work package | Owner | Dependency | Acceptance test | Status |
 |---|---|---|---|---|---|---|---|
 | S1-01 | 1 | Must | PostgreSQL ten-table schema and seed | Abeer, Tala | DB | Fresh migration + FK assertions | SOURCE |
-| S1-02 | 1 | Must | Account register/login/logout | Abeer, Ghadi | S1-01 | QA-01/02 | SOURCE |
-| S1-03 | 1 | Must | User/Admin session guard | Abeer, Ghadi | S1-02 | QA-03 | SOURCE |
+| S1-02 | 1 | Must | Account register/login/logout | Abeer, Ghadi | S1-01 | QA-01/02 | CI TESTED — account checks passed |
+| S1-03 | 1 | Must | User/Admin session guard | Abeer, Ghadi | S1-02 | QA-03 | CI TESTED — session checks passed |
 | S1-04 | 1 | Must | Listing create/edit/resubmit API | Abeer, Ghadi | S1-02 | QA-17 | SOURCE |
 | S1-05 | 1 | Must | Safe image upload + validation | Abeer, Ghadi; Aseel UI | S1-04 | QA-22 | TODO |
-| S1-06 | 1 | Must | Registration/login/listing UI | Aseel, Ghadi | S1-02/04 | Browser flow | Partial SOURCE |
+| S1-06 | 1 | Must | Registration/login/listing UI | Aseel, Ghadi | S1-02/04 | Browser flow | Approved Figma account UI CI TESTED; listing UI pending |
 | S1-07 | 1–3 | Must | Verify real banking sandbox provider | Abeer, Ghadi | External authorization | Official request/response | BLOCKED |
 | S2-01 | 2 | Must | Admin approve/reject API | Abeer, Ghadi | S1-04 | QA-03/04 | SOURCE |
 | S2-02 | 2 | Must | Auction create and public discovery | Abeer, Ghadi | S2-01 | QA-04 | SOURCE |
