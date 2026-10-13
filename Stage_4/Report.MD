@@ -17,8 +17,9 @@
 **Local update — 13 October 2026:** The approved Figma account interface and API
 integration now have local execution evidence, with 22 backend runner entries
 and 30 frontend tests passing. See [Testing Report](Testing_Report.md) for the
-tested working tree and limits. Review/upload and full marketplace acceptance
-remain pending; the dated source audit below is retained as the original snapshot.
+tested application revision, passing GitHub CI runs and limits. The account change
+set is published in PR #2; full marketplace acceptance remains pending. The dated
+source audit below is retained as the original snapshot.
 
 Mezyad is an auction platform where one registered user can list an asset for sale and bid on other users' auctions. Administrators moderate submitted listings before auction creation. Auctions can be public or private; private participation requires a valid access grant. The bid flow requires commitment verification, minimum-price checks, transactional concurrency control, an immutable bid record, and consistent closure/winner determination. The project intentionally excludes real money movement.
 

@@ -60,5 +60,6 @@ UI behavior and do not replace the backend PostgreSQL integration suite or a
 full browser journey against a running server.
 
 Actual local execution results and remaining acceptance work are recorded in
-[Stage 4 Testing Report](../Stage_4/Testing_Report.md). GitHub CI is configured
-but has not been executed before upload.
+[Stage 4 Testing Report](../Stage_4/Testing_Report.md). The account workflow passed
+on GitHub for the published application revision; links and results are recorded
+in that report.

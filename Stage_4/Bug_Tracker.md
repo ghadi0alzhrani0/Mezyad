@@ -23,7 +23,7 @@ return to the Porsche auction. Actual: the account page opened because the
 destination existed only in a React ref. Fix: retain a validated auction UUID
 in the login/registration URL. Retest: the automated reload regression and the
 real browser journey both returned to the same Porsche ID and image.
-**Status: Verified locally; review/upload pending.**
+**Status: Published fix; verified locally and by the GitHub CI regression test.**
 
 ## Defect entry template
 

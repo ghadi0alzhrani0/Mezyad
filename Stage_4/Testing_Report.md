@@ -2,9 +2,11 @@
 
 **Snapshot:** 13 October 2026 · **Status:** Approved Figma account UI, account integration and catalog identity tested locally; full marketplace acceptance remains pending.
 
-**Tested source:** `feature/account-integration`, uncommitted working tree based on
-`86028b4ffc703550f0f4cf185ff2e996b628ed27`. These results do not describe the
-unchanged remote `main` branch or claim that a reviewed release has been delivered.
+**Tested application revision:** [`c3764b9`](https://github.com/ghadi0alzhrani0/Mezyad/commit/c3764b989eb3c751ce8668d2430f22846dea0ae9),
+on `feature/account-integration`, based on `86028b4ffc703550f0f4cf185ff2e996b628ed27`.
+Local runs preceded that commit; GitHub CI subsequently passed for the same
+application content. The following delivery update changes status documentation
+only. These results cover the account/catalog subset, not full marketplace acceptance.
 
 **Environment:** macOS 27.0.1 (Apple Silicon), Node.js 24.19.0, Docker Desktop
 4.94.0, PostgreSQL 16.15, Vite 6.4.4 and Vitest 4.1.11. Browser checks used the
@@ -20,6 +22,7 @@ Codex in-app browser; physical-device compatibility was not tested.
 | Backend tests | Dedicated PostgreSQL test DB | `cd backend && TEST_DATABASE_URL=… npm test` | PASS — 22 runner entries, 0 failed, 0 skipped |
 | Frontend tests | Vitest 4.1.11, jsdom | `cd frontend && npm test` | PASS — 30 tests in three files, 0 failed, 0 skipped |
 | React bundle | Vite 6.4.4 | `cd frontend && npm run build` | PASS — 33 modules transformed |
+| GitHub CI | Ubuntu runner + PostgreSQL 16, Node 24 | Account integration checks on `c3764b9` | PASS — backend syntax/tests, frontend tests and build |
 | Account/browser integration | Running PostgreSQL/API/React | Register/login/logout; auction → login reload → same auction; category/gallery identity | PASS — account and browsing subset only |
 | Full marketplace E2E | Complete listing/private/bidding UI + provider access | Public/private auction journeys | NOT RUN |
 
@@ -27,7 +30,8 @@ Lockfiles have been generated locally for both workspaces. Clean installation
 using `npm ci --ignore-scripts --no-audit --no-fund` passed in each workspace;
 the tests and build above passed after that installation. An earlier offline
 frontend installation failed because the local npm cache lacked `yallist`;
-installation with registry access resolved it. Neither lockfile is uploaded yet.
+installation with registry access resolved it. Both lockfiles are included in the
+published account change set.
 
 ## 2. Full Stage 3 traceability
 
@@ -134,8 +138,12 @@ Dependency audits returned zero known vulnerabilities for backend production
 dependencies and the complete frontend dependency tree on this date. This is
 not a claim that the application has no security defects.
 
-The account GitHub Actions workflow is prepared locally but has **not** been
-uploaded or executed on GitHub. Ordinary account CI needs no banking credentials.
+The account GitHub Actions workflow is published and executed on GitHub. Both
+the [branch run](https://github.com/ghadi0alzhrani0/Mezyad/actions/runs/38426984741)
+and [pull-request run](https://github.com/ghadi0alzhrani0/Mezyad/actions/runs/38427016481)
+passed for `c3764b9` on 13 October 2026. The pull-request logs confirm 22 backend
+runner entries with zero failures/skips, 30 frontend tests in three passing files,
+and a successful frontend build. Ordinary account CI needs no banking credentials.
 
 **Environment setup failures:** Native PostgreSQL initialization was blocked by
 sandbox shared-memory restrictions, and the first connection attempt failed.
@@ -159,7 +167,8 @@ unchanged. Stage 3 SHA-256 remains
 | Bug | Issue ID if failed |
 | Retest | Commit and result after fix |
 
-**Release decision:** Account changes are ready for review, with local execution
-evidence. The full marketplace is NOT READY — full E2E, image validation and
+**Release decision:** The published account change set has local and GitHub CI
+execution evidence in [PR #2](https://github.com/ghadi0alzhrani0/Mezyad/pull/2).
+The full marketplace is NOT READY — full E2E, image validation and
 genuine sandbox integration are not verified. Banking remains blocked by
 authorized provider access; no real banking test was executed in this work.
