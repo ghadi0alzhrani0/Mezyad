@@ -1,0 +1,557 @@
+{
+  "config": {
+    "argv": [
+      "/usr/bin/node",
+      "/workspace/frontend/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/workspace/frontend/playwright.config.js",
+    "rootDir": "/workspace/frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/evidence/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/workspace/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "*.spec.js"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/evidence/browser",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/workspace/frontend/e2e",
+        "snapshotDir": "/workspace/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": "*.spec.js",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:44018",
+          "headless": true,
+          "screenshot": "off",
+          "video": "off",
+          "trace": "off",
+          "launchOptions": {}
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/evidence/browser/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node scripts/e2e-server.js",
+      "url": "http://127.0.0.1:44018",
+      "reuseExistingServer": false,
+      "timeout": 30000
+    }
+  },
+  "suites": [
+    {
+      "title": "journeys.spec.js",
+      "file": "journeys.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "registration, login return and logout use the real API",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1651,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:00.267Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-a3f2b2fc2e33a0b120b1",
+          "file": "journeys.spec.js",
+          "line": 11,
+          "column": 1
+        },
+        {
+          "title": "public details preserve identity and bank unavailable does not submit a bid",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1012,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:02.089Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-6195f6e61b473726bf6e",
+          "file": "journeys.spec.js",
+          "line": 14,
+          "column": 1
+        },
+        {
+          "title": "private wrong code is denied; correct code opens the same private auction",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1129,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:03.112Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-56288439ce73c361d02d",
+          "file": "journeys.spec.js",
+          "line": 17,
+          "column": 1
+        },
+        {
+          "title": "ordinary USER cannot open admin review",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 434,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:04.247Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-6354e668a6943fb307b2",
+          "file": "journeys.spec.js",
+          "line": 20,
+          "column": 1
+        },
+        {
+          "title": "administrator reviews and rejects the exact pending listing with confirmation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5623,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('لا توجد إعلانات بانتظار المراجعة.')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('لا توجد إعلانات بانتظار المراجعة.') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('لا توجد إعلانات بانتظار المراجعة.')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('لا توجد إعلانات بانتظار المراجعة.')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('لا توجد إعلانات بانتظار المراجعة.') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('لا توجد إعلانات بانتظار المراجعة.')\u001b[22m\n\n    at /workspace/frontend/e2e/journeys.spec.js:24:549",
+                    "location": {
+                      "file": "/workspace/frontend/e2e/journeys.spec.js",
+                      "column": 549,
+                      "line": 24
+                    },
+                    "snippet": "  22 | });\n  23 | test('administrator reviews and rejects the exact pending listing with confirmation',async({page})=>{\n> 24 |  const f=await login(page,'admin');await page.goto('/#admin');await page.getByRole('link',{name:'مراجعة الإعلان'}).click();await expect(page.getByRole('heading',{name:'QA pending'})).toBeVisible();await page.getByLabel('سبب الرفض عند الحاجة').fill('Please correct the details.');await page.getByRole('button',{name:'رفض الإعلان',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('QA pending');await page.getByRole('button',{name:'تأكيد',exact:true}).click();await expect(page.getByText('لا توجد إعلانات بانتظار المراجعة.')).toBeVisible();\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ^\n  25 | });\n  26 | test('seller creates private auction from approved listing and receives code',async({page})=>{\n  27 |  const f=await login(page,'seller');await page.goto('/#auction-new/'+f.items.approved);await page.getByLabel('نوع المزاد').selectOption('PRIVATE');await page.getByLabel('سعر البداية (ر.س)').fill('1500');await page.getByLabel('الحد الأدنى لزيادة المزايدة (ر.س)').fill('50');const start=new Date(Date.now()+3600000).toISOString().slice(0,16),end=new Date(Date.now()+7200000).toISOString().slice(0,16);await page.getByLabel('بداية المزاد').fill(start);await page.getByLabel('نهاية المزاد').fill(end);await page.getByRole('button',{name:'إنشاء المزاد',exact:true}).click();await expect(page.getByLabel('رمز وصول المزاد الخاص')).not.toHaveValue('');await page.getByRole('link',{name:'عرض المزاد',exact:true}).click();await expect(page.getByRole('heading',{name:'QA approved'})).toBeVisible();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/frontend/e2e/journeys.spec.js",
+                        "column": 549,
+                        "line": 24
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('لا توجد إعلانات بانتظار المراجعة.')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('لا توجد إعلانات بانتظار المراجعة.') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('لا توجد إعلانات بانتظار المراجعة.')\u001b[22m\n\n\n  22 | });\n  23 | test('administrator reviews and rejects the exact pending listing with confirmation',async({page})=>{\n> 24 |  const f=await login(page,'admin');await page.goto('/#admin');await page.getByRole('link',{name:'مراجعة الإعلان'}).click();await expect(page.getByRole('heading',{name:'QA pending'})).toBeVisible();await page.getByLabel('سبب الرفض عند الحاجة').fill('Please correct the details.');await page.getByRole('button',{name:'رفض الإعلان',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('QA pending');await page.getByRole('button',{name:'تأكيد',exact:true}).click();await expect(page.getByText('لا توجد إعلانات بانتظار المراجعة.')).toBeVisible();\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ^\n  25 | });\n  26 | test('seller creates private auction from approved listing and receives code',async({page})=>{\n  27 |  const f=await login(page,'seller');await page.goto('/#auction-new/'+f.items.approved);await page.getByLabel('نوع المزاد').selectOption('PRIVATE');await page.getByLabel('سعر البداية (ر.س)').fill('1500');await page.getByLabel('الحد الأدنى لزيادة المزايدة (ر.س)').fill('50');const start=new Date(Date.now()+3600000).toISOString().slice(0,16),end=new Date(Date.now()+7200000).toISOString().slice(0,16);await page.getByLabel('بداية المزاد').fill(start);await page.getByLabel('نهاية المزاد').fill(end);await page.getByRole('button',{name:'إنشاء المزاد',exact:true}).click();await expect(page.getByLabel('رمز وصول المزاد الخاص')).not.toHaveValue('');await page.getByRole('link',{name:'عرض المزاد',exact:true}).click();await expect(page.getByRole('heading',{name:'QA approved'})).toBeVisible();\n    at /workspace/frontend/e2e/journeys.spec.js:24:549"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:04.687Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/evidence/browser/journeys-administrator-rev-7b858-g-listing-with-confirmation/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/frontend/e2e/journeys.spec.js",
+                    "column": 549,
+                    "line": 24
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-5855594ea3fabf3dac30",
+          "file": "journeys.spec.js",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "seller creates private auction from approved listing and receives code",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1756,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:10.577Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-c91f41b71cb20c85171e",
+          "file": "journeys.spec.js",
+          "line": 26,
+          "column": 1
+        },
+        {
+          "title": "real bid with synthetic eligibility uses confirmation, DB acceptance and history",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 629,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:12.380Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-6581babcc88dd6f3526b",
+          "file": "journeys.spec.js",
+          "line": 29,
+          "column": 1
+        },
+        {
+          "title": "ended no-bid auction shows no-winner result without settlement claims",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 96,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:13.020Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-35e4e5d4f2961c02a249",
+          "file": "journeys.spec.js",
+          "line": 32,
+          "column": 1
+        },
+        {
+          "title": "My Activity includes own listings and eligible auction participation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 711,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:13.126Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-d172958464fad3cc270d",
+          "file": "journeys.spec.js",
+          "line": 35,
+          "column": 1
+        },
+        {
+          "title": "live multipart upload failure stays visible and creates no false listing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 957,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:13.845Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-4bf0b9d68a1c3a7130f8",
+          "file": "journeys.spec.js",
+          "line": 38,
+          "column": 1
+        },
+        {
+          "title": "responsive screens retain labels and stay inside 320/390/768/1440 px viewports",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 448,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:14.811Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-756b432fdc657011fc65",
+          "file": "journeys.spec.js",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "accepted bid closes with a matching winner in the same browser journey",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 619,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-13T18:55:15.271Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "be27603e9a4df7bd9652-bae62a76174913280200",
+          "file": "journeys.spec.js",
+          "line": 45,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-13T18:54:59.068Z",
+    "duration": 16870.147,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 <WORKSPACE>/frontend
+
+
+ Test Files  4 passed (4)
+      Tests  47 passed (47)
+   Start at  22:07:26
+   Duration  1.90s (transform 356ms, setup 634ms, import 442ms, tests 2.21s, environment 1.44s)
+

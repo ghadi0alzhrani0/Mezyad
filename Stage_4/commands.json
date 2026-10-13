@@ -1,0 +1,28 @@
+{
+  "dateUtc": "2026-10-13T18:51:17.418213+00:00",
+  "results": [
+    {
+      "command": "npm test",
+      "cwd": "frontend",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "cwd": "frontend",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run check",
+      "cwd": "backend",
+      "exitCode": 0
+    }
+  ],
+  "finalVerificationUtc": "2026-10-13T19:01:17.332146+00:00",
+  "componentTests": {
+    "passed": 47,
+    "failed": 0,
+    "skipped": 0,
+    "files": 4
+  },
+  "buildExitCode": 0
+}

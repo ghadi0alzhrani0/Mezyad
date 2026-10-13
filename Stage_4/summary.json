@@ -1,0 +1,27 @@
+{
+  "verifiedUtc": "2026-10-13T19:08:05.762880+00:00",
+  "baselineCommit": "46a84e7cdc9764b032b05ae29c1a937a40f71006",
+  "componentTests": {
+    "passed": 47,
+    "failed": 0,
+    "skipped": 0,
+    "files": 4
+  },
+  "browserTests": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0
+  },
+  "productionBuild": "Passed",
+  "backendSyntaxCheck": "Passed",
+  "stage3Unchanged": true,
+  "identityAssetsUnchanged": true,
+  "sourceOverlayCheck": "Passed; every delivered application file matches the tested work copy",
+  "deletedTrackedFiles": [],
+  "externalBankIntegration": "Blocked; synthetic commitment in test harness only",
+  "multipartUpload": "Blocked by existing backend; failure path tested",
+  "screenshotsVideosTraces": "Disabled; none included",
+  "deliveryStatus": "Local only; no commit or upload",
+  "pathNormalization": "Absolute local workspace/home paths in copied evidence are replaced with neutral labels; numeric results and errors preserved"
+}
