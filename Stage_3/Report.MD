@@ -79,6 +79,34 @@ Mezyad uses React and an Arabic right-to-left interface with a vintage-inspired 
 
 **Interface feedback:** Loading indicators, validation messages, auction status labels, empty states and success/error notifications provide clear feedback throughout these screens.
 
+#### Figma UI and Prototype Flows
+
+Mezyad is a high-value asset auction platform that brings together bidders, sellers, and administrators. Its prototype presents an Arabic, right-to-left experience for browsing auctions, presenting assets, participating in public or private auctions, and viewing auction results. The initial interface features camels, real estate, rare cars, and distinctive vehicle plates.
+
+**Development stage.** Mezyad is an initial prototype that is still under development. It illustrates the main screens, navigation, and user journeys.
+
+**Figma UI Prototype:** [View the Mezyad UI prototype](https://www.figma.com/proto/mbc0Qc5e0hR8dIaqQjbMMN/Mezyad-1?node-id=2-2&starting-point-node-id=2%3A2)
+
+The Figma UI prototype presents the screen designs, visual layout, and seven demonstration flows for the bidder, seller, and administrator experiences.
+
+**Figma Make Prototype:** [View the Mezyad Make prototype](https://www.figma.com/make/kPPjEPSCp5baGlCi8Lz2o4/Mezyad-1?t=Z7jnPTxHHkYSNbgS-20&fullscreen=1)
+
+The Figma Make link presents Mezyad's interactive prototype in fullscreen preview mode. It provides a website-style preview for exploring the interface and navigating the project's sample pages and auction scenarios.
+
+**Main user journeys.** The Figma UI prototype illustrates the following seven scenarios:
+
+| Flow | Experience illustrated |
+|---|---|
+| **01 — Browse, Bid & Win** | Browsing from the homepage to the Porsche Carrera GT auction, account creation or sign-in, Bid Commitment, bid submission, a time-extension state, auction closure, and the winning result. |
+| **02 — Outbid & Did Not Win** | Participating in the Ferrari F40 auction, viewing an outbid state, and seeing the final result when another bidder wins. |
+| **03 — Submit, Approve & Publish a Listing** | The Villa Hittin listing journey, including asset details and photographs, submission, administrator review and approval, auction setup, and the scheduled-auction view. |
+| **04 — Listing Returned for Revision** | The Plate NJD 1 listing scenario, including administrator feedback, seller updates to details and photographs, resubmission, and review and approval states. |
+| **05 — Create & Join a Private Auction** | The Villa Al Malqa private-auction scenario, including auction setup, access-code entry, Bid Commitment, auction details, bid submission, and result states. |
+| **06 — Using the Auction Assistant** | The bidder's public-auction search assistance, auction activity summary, bidding activity insights, and auction summary, together with the seller's listing title and completeness suggestions. |
+| **07 — Auction Closed Without Bids** | Administrator auction monitoring and the Camel Rahoul result, showing an auction that closes without accepted bids or a winner. |
+
+**Key features represented.** The prototype highlights account access, asset browsing and listing, administrator review, public and private auctions, Bid Commitment, bidding and auction timing, time extensions, auction results, and the Smart Auction Assistant. These screens and scenarios communicate the project's initial design direction as the prototype continues to develop.
+
 ### 2.4 Listing Description Suggestion
 
 The Create Listing form includes a Suggest Description button. It combines information entered by the asset owner into a readable paragraph that can be edited before submission. For vehicles, the suggestion can use make, model, year, mileage and condition. The feature uses a simple React template and does not require a separate service or external AI model.
