@@ -1,0 +1,61 @@
+{
+  "designFile": "mbc0Qc5e0hR8dIaqQjbMMN",
+  "nodes": {
+    "home": "2:2",
+    "login": "7:2",
+    "signup": "7:32",
+    "account": "7:67",
+    "browse": "2:78",
+    "auction": "2:140"
+  },
+  "assets": [
+    {
+      "path": "images/mezyad-logo.png",
+      "sha256": "b3282421b8d8a04d5acc07898df39e0fc2a36698cde67c8b46ef6ec37d7d6475"
+    },
+    {
+      "path": "images/home-interior.jpg",
+      "sha256": "9e7381372b175ea4153023a24ed8ca190c624eea9a19ad59fb7e91084f9c6796"
+    },
+    {
+      "path": "images/signin-interior.png",
+      "sha256": "46acaed98fc9267a5efe47c19b6a99e462a76477d4e9222d8137786358b4ecbb"
+    },
+    {
+      "path": "images/signup-interior.png",
+      "sha256": "232ca52815c16c86a528db0a7a1b3b7c07d8e2164a1d3bb1730cfb73c3d3db6a"
+    },
+    {
+      "path": "images/hittin-villa.jpg",
+      "sha256": "7e12c00d26e70e4bfb9b2ee401539194dcc5fdb1b12a4fe1871f9bb399c29558"
+    },
+    {
+      "path": "images/porsche-carrera-gt.jpg",
+      "sha256": "18f3faf9d1937b79626122c058cb5ab9c9a855d8a462342da6455d5c702a08c6"
+    },
+    {
+      "path": "images/plate-njd1.jpg",
+      "sha256": "b6905ffb4d46d3a9fa7cf89f609f420c7e8ad22b7bde1204e4327913ab581893"
+    },
+    {
+      "path": "fonts/ElMessiri.ttf",
+      "sha256": "5d58d5259d2accccba39cffe12e1226e88b6afc5150e3605eb2a9c2fe06ccab0"
+    },
+    {
+      "path": "fonts/NotoSansArabic.ttf",
+      "sha256": "63111b5b2e074dd48cc67692e0a2726d86ee94c1c37fe8598257b7b4e87e869e"
+    },
+    {
+      "path": "images/porsche-carrera-gt-2.jpg",
+      "sha256": "6a3701bec1ee1925b96e813fa9ecfb6047c46c3ddb7c228fe7eb2ab7684bd122"
+    },
+    {
+      "path": "images/porsche-carrera-gt-3.jpg",
+      "sha256": "262617537551c977949cabe5c3db320dff3de057b3cef76fe63e5f1cea4f7983"
+    },
+    {
+      "path": "images/porsche-carrera-gt-4.jpg",
+      "sha256": "2b26a86e6213d17e9cfca87a1cac5de86c407e682cd3ecf46288a1cda39e51ac"
+    }
+  ]
+}

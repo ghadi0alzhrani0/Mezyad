@@ -34,3 +34,8 @@ Abeer Al-Saiari · Ghadi Al-Zahrani · Aseel Al-Zahrani · Tala Al-Hudaibi
 - [Backend](backend/)
 - [Frontend](frontend/)
 - [Database](database/)
+
+## Account development
+
+Local setup and account test commands: [Backend guide](backend/README.md) ·
+[Frontend guide](frontend/README.md).

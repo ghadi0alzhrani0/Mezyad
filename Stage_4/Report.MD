@@ -6,13 +6,19 @@
 |---|---|
 | Team | Abeer Al-Saiari · Ghadi Al-Zahrani · Aseel Al-Zahrani · Tala Al-Hudaibi |
 | Source of truth | [Stage 3 Technical Report](../Stage_3/Report.MD) |
-| Repository | [Mezyad on GitHub](https://github.com/Abeerr0/mezyad) |
+| Repository | [Mezyad on GitHub](https://github.com/ghadi0alzhrani0/Mezyad) |
 | Reporting snapshot | 12 October 2026 |
 | Stage | Implementation started — acceptance pending |
 
 > **Reading guide.** This is the main submission document, organized by **Tasks 0–5**. It answers what the team planned, what the repository currently contains, how the work is structured, what constitutes proof of completion, and what remains. **Committed code is not equivalent to tested functionality; templates are not real meeting minutes.** Where no verifiable evidence exists, the report identifies the gap rather than inventing it.
 
 ### Executive summary
+
+**Local update — 13 October 2026:** The approved Figma account interface and API
+integration now have local execution evidence, with 22 backend runner entries
+and 30 frontend tests passing. See [Testing Report](Testing_Report.md) for the
+tested working tree and limits. Review/upload and full marketplace acceptance
+remain pending; the dated source audit below is retained as the original snapshot.
 
 Mezyad is an auction platform where one registered user can list an asset for sale and bid on other users' auctions. Administrators moderate submitted listings before auction creation. Auctions can be public or private; private participation requires a valid access grant. The bid flow requires commitment verification, minimum-price checks, transactional concurrency control, an immutable bid record, and consistent closure/winner determination. The project intentionally excludes real money movement.
 
