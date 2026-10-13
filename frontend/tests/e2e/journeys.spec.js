@@ -79,6 +79,33 @@ async function commitAndBid(page, id) {
   await page.getByRole('button', { name: 'تأكيد المزايدة', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('تم قبول مزايدتك');
 }
+test('QA-17 authentication journey: protected activity redirects, login restores it, and logout clears session', async ({
+  page,
+}) => {
+  const email = `auth-flow-${Date.now()}@example.test`;
+
+  await page.goto('/activity');
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByRole('link', { name: 'إنشاء حساب', exact: true }).click();
+  await page.getByLabel('الاسم', { exact: true }).fill('مستخدم رحلة الدخول');
+  await page.getByLabel('البريد الإلكتروني').fill(email);
+  await page.getByLabel('كلمة المرور').fill(password);
+  await page.getByRole('button', { name: 'إنشاء حساب', exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('status')).toContainText('تم إنشاء حسابك');
+
+  await page.getByLabel('البريد الإلكتروني').fill(email);
+  await page.getByLabel('كلمة المرور').fill(password);
+  await page.getByRole('button', { name: 'تسجيل الدخول', exact: true }).click();
+  await expect(page).toHaveURL(/\/activity$/);
+  await expect(page.getByRole('button', { name: 'تسجيل الخروج' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.goto('/activity');
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 test('QA-15 public journey: register, upload, review, auction, commitment, bid and win', async ({
   browser,
 }) => {
