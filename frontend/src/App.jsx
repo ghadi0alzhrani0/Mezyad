@@ -3,6 +3,7 @@ import { AccountPanel } from './auth/AccountPanel.jsx';
 import { useAuth } from './auth/AuthProvider.jsx';
 import { SiteHeader, SiteFooter } from './ui/SiteChrome.jsx';
 import { AuctionDetails, AuctionList, categories } from './ui/Auctions.jsx';
+import { ActivityDashboard } from './ui/ActivityDashboard.jsx';
 
 function routeFromHash() {
   const [value, query = ''] = window.location.hash.slice(1).split('?');
@@ -11,7 +12,7 @@ function routeFromHash() {
   if (/^auction\/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value)) return { view: 'auction', id: value.slice(8).toLowerCase() };
   const [view, category] = value.split('/');
   if (view === 'auctions') return { view, category: categories.some(c => c.key === category) ? category : undefined };
-  return { view: ['login', 'register', 'account'].includes(view) ? view : 'home', authAuction };
+  return { view: ['login', 'register', 'account', 'activity'].includes(view) ? view : 'home', authAuction };
 }
 const go = value => { window.location.hash = value; };
 
@@ -27,12 +28,12 @@ export function App() {
     if (status === 'authenticated' && ['login', 'register'].includes(route.view)) {
       go(route.authAuction ? 'auction/' + route.authAuction : 'account');
     }
-    if (status === 'guest' && route.view === 'account') go('login');
+    if (status === 'guest' && ['account', 'activity'].includes(route.view)) go('login');
   }, [status, route.view, route.authAuction]);
   const accountView = ['login', 'register', 'account'].includes(route.view);
   return <>
     <SiteHeader signedIn={status === 'authenticated'} accountView={accountView}/>
-    {accountView ? <AccountPanel initialMode={route.view === 'register' ? 'register' : 'login'}
+    {route.view === 'activity' ? <ActivityDashboard/> : accountView ? <AccountPanel initialMode={route.view === 'register' ? 'register' : 'login'}
       onModeChange={mode => go((mode === 'register' ? 'register' : 'login') + (route.authAuction ? '?auction=' + route.authAuction : ''))}/>
       : route.view === 'auction' ? <AuctionDetails id={route.id} onRequireLogin={() => go('login?auction=' + route.id)}/>
         : route.view === 'auctions' ? <main className="content-shell browse-page">
