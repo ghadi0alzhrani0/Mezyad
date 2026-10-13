@@ -2,6 +2,8 @@
 
 Test date: **2026-10-12**, Asia/Riyadh.
 
+Remote delivery and CI evidence reviewed: **2026-10-13**, Asia/Riyadh.
+
 Local tested implementation commit: **`54fa8dfc7aa9ce06bf32005d34e32867fb08c15b`**. Subsequent documentation-only commits record these results; they do not change the tested application or test code. Delivery through the signed-in GitHub browser creates separate commits; repository-tree comparison and remote CI provide the corresponding delivery evidence.
 
 Baseline main: `07549f819a5d43394753592e9beb8ab73e4f76ed`. Branch: `chore/repository-alignment`.
@@ -108,7 +110,9 @@ Earlier failed attempts are not counted as final passes. No screenshots or resul
 
 **Genuine Open Banking: Blocked / Not Tested.** SAB/SABB and Al Rajhi are researched candidates, not selected or connected providers. No supported Bid Commitment operation, eligibility rule, consent/callback contract or test credentials have been approved. The real adapter remains unconfigured and reports an explicit error; the local mock is isolated and refused in production. See [official research and owner-review findings](STAGE_3_REVIEW_NOTES.md).
 
-**GitHub Actions:** configured for lint, build, PostgreSQL migrations/seeding, API/React tests and browser journeys. Local clean-environment success does not imply a remote CI pass; remote results must be checked after the branch and pull request are created.
+**GitHub Actions: Passed.** [Run 38241578097](https://github.com/ghadi0alzhrani0/Mezyad/actions/runs/38241578097) for [Pull Request #1](https://github.com/ghadi0alzhrani0/Mezyad/pull/1), head `14c3d4030cd4de88e2ae6dd1dedfc2f59c21fb3d`, completed successfully on 2026-10-12. The validate job used Ubuntu, Node.js 24.21.0, npm 11.19.0 and a PostgreSQL 16 service. Its logs confirm lint, formatting, build, migration/seeding, API/React tests, Chromium journeys and both protected-file checks passed. Totals were 46 backend passed / 1 skipped, 16 frontend passed, and 3 browser passed (49.2 seconds for the browser suite). Genuine banking remained skipped, not verified.
+
+The remote head and local delivery commit `6176cd0` had an identical Git tree, `8bb73cf3015ee7a94747c58180c9d232f5e1feca`; their file diff was empty. Commit IDs differ because delivery used the signed-in GitHub browser. Subsequent documentation-only changes record this evidence without changing application/test code. This records an actual completed CI run rather than predicting later run outcomes.
 
 **Known limitations:** no unresolved application failure was observed in the final suites. A process crash during a commitment can leave PENDING without a provider reconciliation policy (R15). Unvisited ended auctions are intentionally finalized on access (R05), following Stage 3. Genuine banking, production deployment, penetration/load testing, full cross-device visual review and final academic acceptance remain outstanding. These are not described as completed features or assessments.
 
