@@ -1,0 +1,146 @@
+[
+  {
+    "file": "seed/repeat-protection.stderr.txt",
+    "originalSha256": "1cbff3992ccc931bef669dac3a3c7a477bce2a906b4084c9423f9bdf7c2597b1",
+    "normalizedSha256": "1cbff3992ccc931bef669dac3a3c7a477bce2a906b4084c9423f9bdf7c2597b1",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "seed/creation.stdout.txt",
+    "originalSha256": "53111fe5dbe5dc4b2f879bdb35b212b8aad99e3710160efa16d756ea277c93ae",
+    "normalizedSha256": "c81206182ab2fcb565082095e8f0ea9b872d152a4ed83d5e4796b76863664d2a",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "seed/unsafe-db-protection.stderr.txt",
+    "originalSha256": "cda920209f657e21dc1ba5f33dba3b59e0266c028b9bae4e0228ffb40f600725",
+    "normalizedSha256": "aa207dc2e38400a2fd7eaa749bb7702f51f52984e0a6f11013a20b91f1381178",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "seed/commands.json",
+    "originalSha256": "718be468ceea8de513011f074f106b39b070928acfba6f1fe20e75d1d42e2946",
+    "normalizedSha256": "24ca73da1e980578085ae0f030abaa5585eb5aa78b6c7880b408392d32b57e7a",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "seed/repeat-protection.stdout.txt",
+    "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalizedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "seed/unsafe-db-protection.stdout.txt",
+    "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalizedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "seed/creation.stderr.txt",
+    "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalizedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "seed/database-assertions.txt",
+    "originalSha256": "1243dfcf3d1c18563abefd899f8457824e1def152f716252624e9ce280be208e",
+    "normalizedSha256": "1243dfcf3d1c18563abefd899f8457824e1def152f716252624e9ce280be208e",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "backend/stdout.txt",
+    "originalSha256": "5d6443e8074a89cc4cc66fc254f0b2ec43c281f55e6120e01f264ccaa2328eac",
+    "normalizedSha256": "a274c9b8561401ee12e513192597e6ca7f1035f4872eb7f262f036022343ebaa",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "backend/summary.json",
+    "originalSha256": "4a17fb485492eb29975af2cdcecef04b0aba9c1bc3d50a8118ec3e1bbb84a1f9",
+    "normalizedSha256": "0a502516f6f14b38ea859bb99bffe947723e7385c12f0f112f37863cb926b883",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "backend/test-cases.json",
+    "originalSha256": "e5e2128b6adf7c4ac60689550b8e5b2c73d8cb2b0058a9994687be1950c6f969",
+    "normalizedSha256": "e5e2128b6adf7c4ac60689550b8e5b2c73d8cb2b0058a9994687be1950c6f969",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "backend/stderr.txt",
+    "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalizedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "backend/junit.xml",
+    "originalSha256": "d7d6c6c4d5f6266f5234b28f1c67455f1fa732963f0fbaa389a0788f50a52b8e",
+    "normalizedSha256": "dff0a6fddf89e393ff0895be1ea71a024fa1fb2f3a44df966bcc3abaa74937fd",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/frontend-tests.stderr.txt",
+    "originalSha256": "48a7165e523076102e27bb04d79e208c9d5ebeb4fe70d2098a396c8fe304ae7e",
+    "normalizedSha256": "bae99b22b95c593cf7065fb5d68045d90b972412266152e115e01ed99e2f5bc5",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/frontend-build.stdout.txt",
+    "originalSha256": "480d3fb92c5d3c0c41e2a8205efbe5866dd840fdf150c29737d1f0bb62ecd06f",
+    "normalizedSha256": "480d3fb92c5d3c0c41e2a8205efbe5866dd840fdf150c29737d1f0bb62ecd06f",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/backend-default.stderr.txt",
+    "originalSha256": "d52d50c263e4e7ac002f37c44461dc6e6c289a674896d1f875592a052b411060",
+    "normalizedSha256": "70fb6032f5a3f98ab14b968185446bc453148d147ad7d219c50f7a068714a612",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/backend-syntax.stdout.txt",
+    "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalizedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/added-file-syntax.json",
+    "originalSha256": "075c3889736ec7d0abb74aacae933f86e9247fa5aaa68f2f58aa71967e410903",
+    "normalizedSha256": "3765c7837fbc89d076f2a43e576ab9c9bdb3d97132dae67ff03f0ad0a53290cb",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/backend-commands.json",
+    "originalSha256": "67229dc6c2ffa02cd2c9a09506f28d9e65c7713c233d5881a23f2d78603fbad7",
+    "normalizedSha256": "67229dc6c2ffa02cd2c9a09506f28d9e65c7713c233d5881a23f2d78603fbad7",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/frontend-tests.stdout.txt",
+    "originalSha256": "be94d6670f25cb4cbb0e18660b711eb6ade5e509c490b014430f4fc4fe088784",
+    "normalizedSha256": "76f6bce07964567c9f0fbb34a57b5346abc26be65e67da912f21fff11f8fdc84",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/frontend-build.stderr.txt",
+    "originalSha256": "a3180d6c8027fe99134cebacb5095a535ef423d4c819e26e87c662f51f3f4ba6",
+    "normalizedSha256": "9e86c7e8a8e62fbc00506b9f27ee45f8bdcdaecafe1694062aab231f3968351c",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/frontend-commands.json",
+    "originalSha256": "2a7f8f604c74c87ca396c13ef689cfdbd01cad3454c21533a192458313e8df51",
+    "normalizedSha256": "2a7f8f604c74c87ca396c13ef689cfdbd01cad3454c21533a192458313e8df51",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/backend-syntax.stderr.txt",
+    "originalSha256": "1cd17d3c17ee217105ae9c48d82473a1a35e6b5db193c5abfa4bf408015c6808",
+    "normalizedSha256": "1a32518daf0005485f673fdedfcc53e04a807bc95312fc352234eb674020da9a",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  },
+  {
+    "file": "regression/backend-default.stdout.txt",
+    "originalSha256": "dfa33194dd5be4e989d6386236594b0cdcc5b2311f028e4aec14694c085bae7b",
+    "normalizedSha256": "dfa33194dd5be4e989d6386236594b0cdcc5b2311f028e4aec14694c085bae7b",
+    "normalization": "Names, project identifiers and path labels only; observed outcomes preserved"
+  }
+]

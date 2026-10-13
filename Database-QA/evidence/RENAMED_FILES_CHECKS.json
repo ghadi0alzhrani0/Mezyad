@@ -1,0 +1,39 @@
+{
+  "dateUtc": "2026-10-13T18:11:29.763395+00:00",
+  "syntax": [
+    {
+      "file": "backend/scripts/run-qa.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/scripts/seed-qa.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/tests/acceptance/qa.contract-gaps.test.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/tests/acceptance/qa.external-blockers.test.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/tests/helpers/qa-fixtures.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/tests/database.test.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/tests/bidding-closure.test.js",
+      "exitCode": 0
+    },
+    {
+      "file": "backend/tests/marketplace.test.js",
+      "exitCode": 0
+    }
+  ],
+  "relativeImports": "PASS",
+  "databaseRerunAfterRename": false
+}

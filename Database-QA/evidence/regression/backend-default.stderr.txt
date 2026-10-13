@@ -1,0 +1,2 @@
+npm notice run project-backend@0.1.0 test
+npm notice run node --test tests/*.test.js

@@ -1,0 +1,2 @@
+npm notice run project-backend@0.1.0 check
+npm notice run node --check src/app.js && node --check src/server.js && node --check src/accounts.js && node --check src/auth.js

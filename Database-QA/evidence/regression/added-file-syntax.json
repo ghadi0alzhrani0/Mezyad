@@ -1,0 +1,42 @@
+[
+  {
+    "file": "tests/marketplace.test.js",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "file": "tests/database.test.js",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "file": "tests/bidding-closure.test.js",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "file": "tests/acceptance/qa.contract-gaps.test.js",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "file": "tests/acceptance/qa.external-blockers.test.js",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "file": "tests/helpers/qa-fixtures.js",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "file": "scripts/run-qa.js",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "file": "scripts/seed-qa.js",
+    "exitCode": 0,
+    "stderr": ""
+  }
+]

@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="GAP-01: Stage 3 multipart listing accepts a valid PNG and persists its image reference" time="0.174243" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js" failure="{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;INVALID_INPUT&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Valid listing fields required&amp;quot;}}&#10;&#10;400 !== 201&#10;">
+		<failure type="testCodeFailure" message="{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;INVALID_INPUT&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Valid listing fields required&amp;quot;}}&#10;&#10;400 !== 201">
+[Error [ERR_TEST_FAILURE]: {"error":{"code":"INVALID_INPUT","message":"Valid listing fields required"}}
+
+400 !== 201
+] {
+  code: 'ERR_TEST_FAILURE',
+  failureType: 'testCodeFailure',
+  cause: AssertionError [ERR_ASSERTION]: {"error":{"code":"INVALID_INPUT","message":"Valid listing fields required"}}
+  
+  400 !== 201
+  
+      at TestContext.&lt;anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:22:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 400,
+    expected: 201,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+}
+		</failure>
+	</testcase>
+	<testcase name="GAP-02 / QA-17: resubmission saves corrected category fields, not only title/description" time="0.012462" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js" failure="Expected values to be strictly deep-equal:&#10;+ actual - expected&#10;&#10;  {&#10;+   fixtureVersion: 'old'&#10;-   fixtureVersion: 'corrected'&#10;  }&#10;">
+		<failure type="testCodeFailure" message="Expected values to be strictly deep-equal:&#10;+ actual - expected&#10;&#10;  {&#10;+   fixtureVersion: 'old'&#10;-   fixtureVersion: 'corrected'&#10;  }">
+[Error [ERR_TEST_FAILURE]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
++   fixtureVersion: 'old'
+-   fixtureVersion: 'corrected'
+  }
+] {
+  code: 'ERR_TEST_FAILURE',
+  failureType: 'testCodeFailure',
+  cause: AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   fixtureVersion: 'old'
+  -   fixtureVersion: 'corrected'
+    }
+  
+      at TestContext.&lt;anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:31:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { fixtureVersion: 'old' },
+    expected: { fixtureVersion: 'corrected' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+}
+		</failure>
+	</testcase>
+	<testcase name="GAP-03: invalid UUID on admin review is a client error, not an internal server failure" time="0.003784" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js" failure="{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;INTERNAL_ERROR&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Unexpected server error&amp;quot;}}&#10;&#10;500 !== 400&#10;">
+		<failure type="testCodeFailure" message="{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;INTERNAL_ERROR&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Unexpected server error&amp;quot;}}&#10;&#10;500 !== 400">
+[Error [ERR_TEST_FAILURE]: {"error":{"code":"INTERNAL_ERROR","message":"Unexpected server error"}}
+
+500 !== 400
+] {
+  code: 'ERR_TEST_FAILURE',
+  failureType: 'testCodeFailure',
+  cause: AssertionError [ERR_ASSERTION]: {"error":{"code":"INTERNAL_ERROR","message":"Unexpected server error"}}
+  
+  500 !== 400
+  
+      at TestContext.&lt;anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:36:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+}
+		</failure>
+	</testcase>
+	<testcase name="GAP-04: overlong listing title is rejected with 400 before a PostgreSQL error" time="0.009610" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js" failure="{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;INTERNAL_ERROR&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Unexpected server error&amp;quot;}}&#10;&#10;500 !== 400&#10;">
+		<failure type="testCodeFailure" message="{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;INTERNAL_ERROR&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Unexpected server error&amp;quot;}}&#10;&#10;500 !== 400">
+[Error [ERR_TEST_FAILURE]: {"error":{"code":"INTERNAL_ERROR","message":"Unexpected server error"}}
+
+500 !== 400
+] {
+  code: 'ERR_TEST_FAILURE',
+  failureType: 'testCodeFailure',
+  cause: AssertionError [ERR_ASSERTION]: {"error":{"code":"INTERNAL_ERROR","message":"Unexpected server error"}}
+  
+  500 !== 400
+  
+      at TestContext.&lt;anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:42:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+}
+		</failure>
+	</testcase>
+	<testcase name="GAP-05: whitespace-only rejection reason is rejected and listing remains pending" time="0.011495" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js" failure="{&amp;quot;data&amp;quot;:{&amp;quot;id&amp;quot;:&amp;quot;660ae414-43b2-49e0-ab9e-d9a20e03fbf6&amp;quot;,&amp;quot;seller_id&amp;quot;:&amp;quot;3c20f7eb-418d-42f4-9a2d-ff27f61307cc&amp;quot;,&amp;quot;category_id&amp;quot;:&amp;quot;e5deb1db-b7d4-4565-893f-7cc99ed108c1&amp;quot;,&amp;quot;title&amp;quot;:&amp;quot;Synthetic QA listing&amp;quot;,&amp;quot;description&amp;quot;:&amp;quot;Synthetic test data; not a real customer listing.&amp;quot;,&amp;quot;category_fields&amp;quot;:{},&amp;quot;status&amp;quot;:&amp;quot;REJECTED&amp;quot;,&amp;quot;review_reason&amp;quot;:&amp;quot;   &amp;quot;,&amp;quot;reviewed_by&amp;quot;:&amp;quot;6f6ae085-61f3-4b29-8846-af87c79bfce3&amp;quot;,&amp;quot;reviewed_at&amp;quot;:&amp;quot;2026-10-13T17:34:24.959Z&amp;quot;}}&#10;&#10;200 !== 400&#10;">
+		<failure type="testCodeFailure" message="{&amp;quot;data&amp;quot;:{&amp;quot;id&amp;quot;:&amp;quot;660ae414-43b2-49e0-ab9e-d9a20e03fbf6&amp;quot;,&amp;quot;seller_id&amp;quot;:&amp;quot;3c20f7eb-418d-42f4-9a2d-ff27f61307cc&amp;quot;,&amp;quot;category_id&amp;quot;:&amp;quot;e5deb1db-b7d4-4565-893f-7cc99ed108c1&amp;quot;,&amp;quot;title&amp;quot;:&amp;quot;Synthetic QA listing&amp;quot;,&amp;quot;description&amp;quot;:&amp;quot;Synthetic test data; not a real customer listing.&amp;quot;,&amp;quot;category_fields&amp;quot;:{},&amp;quot;status&amp;quot;:&amp;quot;REJECTED&amp;quot;,&amp;quot;review_reason&amp;quot;:&amp;quot;   &amp;quot;,&amp;quot;reviewed_by&amp;quot;:&amp;quot;6f6ae085-61f3-4b29-8846-af87c79bfce3&amp;quot;,&amp;quot;reviewed_at&amp;quot;:&amp;quot;2026-10-13T17:34:24.959Z&amp;quot;}}&#10;&#10;200 !== 400">
+[Error [ERR_TEST_FAILURE]: {"data":{"id":"660ae414-43b2-49e0-ab9e-d9a20e03fbf6","seller_id":"3c20f7eb-418d-42f4-9a2d-ff27f61307cc","category_id":"e5deb1db-b7d4-4565-893f-7cc99ed108c1","title":"Synthetic QA listing","description":"Synthetic test data; not a real customer listing.","category_fields":{},"status":"REJECTED","review_reason":"   ","reviewed_by":"6f6ae085-61f3-4b29-8846-af87c79bfce3","reviewed_at":"2026-10-13T17:34:24.959Z"}}
+
+200 !== 400
+] {
+  code: 'ERR_TEST_FAILURE',
+  failureType: 'testCodeFailure',
+  cause: AssertionError [ERR_ASSERTION]: {"data":{"id":"660ae414-43b2-49e0-ab9e-d9a20e03fbf6","seller_id":"3c20f7eb-418d-42f4-9a2d-ff27f61307cc","category_id":"e5deb1db-b7d4-4565-893f-7cc99ed108c1","title":"Synthetic QA listing","description":"Synthetic test data; not a real customer listing.","category_fields":{},"status":"REJECTED","review_reason":"   ","reviewed_by":"6f6ae085-61f3-4b29-8846-af87c79bfce3","reviewed_at":"2026-10-13T17:34:24.959Z"}}
+  
+  200 !== 400
+  
+      at TestContext.&lt;anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:48:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+}
+		</failure>
+	</testcase>
+	<testcase name="GAP-06 / QA-06: private bid denial does not disclose whether the auction exists" time="0.010681" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js" failure="{&amp;quot;hidden&amp;quot;:{&amp;quot;status&amp;quot;:403,&amp;quot;json&amp;quot;:{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;NO_ACCESS&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Private access required&amp;quot;}}},&amp;quot;missing&amp;quot;:{&amp;quot;status&amp;quot;:404,&amp;quot;json&amp;quot;:{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;NOT_FOUND&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Auction not found&amp;quot;}}}}&#10;&#10;403 !== 404&#10;">
+		<failure type="testCodeFailure" message="{&amp;quot;hidden&amp;quot;:{&amp;quot;status&amp;quot;:403,&amp;quot;json&amp;quot;:{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;NO_ACCESS&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Private access required&amp;quot;}}},&amp;quot;missing&amp;quot;:{&amp;quot;status&amp;quot;:404,&amp;quot;json&amp;quot;:{&amp;quot;error&amp;quot;:{&amp;quot;code&amp;quot;:&amp;quot;NOT_FOUND&amp;quot;,&amp;quot;message&amp;quot;:&amp;quot;Auction not found&amp;quot;}}}}&#10;&#10;403 !== 404">
+[Error [ERR_TEST_FAILURE]: {"hidden":{"status":403,"json":{"error":{"code":"NO_ACCESS","message":"Private access required"}}},"missing":{"status":404,"json":{"error":{"code":"NOT_FOUND","message":"Auction not found"}}}}
+
+403 !== 404
+] {
+  code: 'ERR_TEST_FAILURE',
+  failureType: 'testCodeFailure',
+  cause: AssertionError [ERR_ASSERTION]: {"hidden":{"status":403,"json":{"error":{"code":"NO_ACCESS","message":"Private access required"}}},"missing":{"status":404,"json":{"error":{"code":"NOT_FOUND","message":"Auction not found"}}}}
+  
+  403 !== 404
+  
+      at TestContext.&lt;anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:56:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 403,
+    expected: 404,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+}
+		</failure>
+	</testcase>
+	<testcase name="GAP-07: public auction status filter excludes auctions in other states" time="0.013172" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js" failure="Expected values to be strictly equal:&#10;&#10;true !== false&#10;">
+		<failure type="testCodeFailure" message="Expected values to be strictly equal:&#10;&#10;true !== false">
+[Error [ERR_TEST_FAILURE]: Expected values to be strictly equal:
+
+true !== false
+] {
+  code: 'ERR_TEST_FAILURE',
+  failureType: 'testCodeFailure',
+  cause: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.&lt;anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:66:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+}
+		</failure>
+	</testcase>
+	<testcase name="BLOCK-01 / QA-07: genuine provider success/rejection/timeout/authentication/response verification" time="0.000356" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.external-blockers.test.js">
+		<skipped type="skipped" message="Stage 3 provider, operation, consent contract and sandbox credentials have not been verified"/>
+	</testcase>
+	<testcase name="BLOCK-02 / QA-22: MIME/extension/size/storage acceptance through the real image upload pipeline" time="0.000059" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.external-blockers.test.js">
+		<skipped type="skipped" message="Multipart image upload is absent; approved file limits and storage backend are unspecified (see GAP-01)"/>
+	</testcase>
+	<testcase name="BLOCK-03 / QA-14/15/16: complete public/private browser journeys and UX states" time="0.000062" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.external-blockers.test.js">
+		<skipped type="skipped" message="QA package tests the database and API; full browser E2E belongs to Frontend + QA review and requires remaining UI/bank work"/>
+	</testcase>
+	<testcase name="BLOCK-04: private-code throttle policy returns 429 at its configured limit" time="0.000041" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.external-blockers.test.js">
+		<skipped type="skipped" message="No throttle implementation or approved threshold/window exists; source review records this security gap"/>
+	</testcase>
+	<testcase name="invalid registration is rejected at the HTTP boundary without requiring a database" time="0.038739" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.http.test.js"/>
+	<testcase name="incomplete login returns a clear 400 response" time="0.009144" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.http.test.js"/>
+	<testcase name="malformed JSON is rejected without echoing sensitive input" time="0.002413" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.http.test.js"/>
+	<testcase name="oversized account request is rejected before processing" time="0.002679" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.http.test.js"/>
+	<testcase name="missing and malformed bearer tokens cannot reach protected handlers" time="0.003490" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.http.test.js"/>
+	<testsuite name="account integration against PostgreSQL" time="7.940745" disabled="0" errors="0" tests="14" failures="0" skipped="0" timestamp="2026-10-13T17:34:25.236Z" hostname="Mac">
+		<testcase name="registration normalizes identity, stores a password hash and creates USER" time="0.541725" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="QA-01: duplicate normalized email returns 409 without another user" time="0.528594" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="concurrent duplicate registrations create exactly one account" time="0.521017" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="login returns an opaque token, stores only its hash and protects responses from caching" time="0.518742" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="QA-02: wrong password and unknown email have the same 401 response and create no session" time="0.519905" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="valid session accesses the protected endpoint and logout revokes it" time="0.529612" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="logout revokes only the current session" time="0.788485" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="expired session is rejected by the server" time="0.520708" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="missing, tampered and forged tokens cannot access protected routes" time="0.006450" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="QA-03: USER cannot approve listings, while a database-provisioned ADMIN can" time="1.041509" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="legacy auth URLs remain compatible with existing clients" time="0.520887" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="public auction cards return the title and image belonging to their own listing" time="0.528344" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="auction details contain only images and description of the requested listing" time="0.529719" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+		<testcase name="private listing images and title are not exposed in public discovery or direct guest access" time="0.790719" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/accounts.integration.test.js"/>
+	</testsuite>
+	<testcase name="GET /health returns status ok" time="0.020536" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/health.test.js"/>
+	<testcase name="money validation" time="0.000343" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/money.test.js"/>
+	<testcase name="BID-01: authentication, UUID and money validation reject invalid requests" time="0.162598" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-03A: owner cannot bid even with a synthetic SUCCESS commitment" time="0.007201" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-03B: the same USER can own an auction and bid in another owner's auction" time="0.009121" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="BID-02: missing, PENDING and FAILED commitments cannot authorize bids" time="0.014913" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-18: first bid at starting price is accepted and price/history update together" time="0.010021" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-08: first bid below starting price is rejected without changing price" time="0.006290" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-19: later bid enforces increment; exact increment is accepted" time="0.015783" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="BID-03: decimal increments retain exact cents without floating point drift" time="0.014654" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-11: scheduled, expired and CLOSED auctions reject bids using server state/time" time="0.016036" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-09: a retried request UUID accepts at most one bid" time="0.009719" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-09 concurrent replay: two waiting requests with the same UUID produce one accepted bid" time="0.038184" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-10: two simultaneous same-price bids serialize; loser sees the updated price" time="0.037967" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="BID-04: reused request UUID across auctions rolls back the losing auction price" time="0.010176" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="BID-05: database failure after bid insertion rolls back bid and price atomically" time="0.015177" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="BID-06 / QA-11: bid waiting on a row lock revalidates the deadline after the lock" time="0.029550" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="BID-07: private grant plus synthetic commitment permits a bid; history stays auction-specific" time="0.017930" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-12: ended auction without bids closes with a null winner" time="0.007914" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="CLOSE-01: highest accepted bid determines winner and belongs to that auction" time="0.017093" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-13: repeated and concurrent detail requests preserve one stable closure result" time="0.022118" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="QA-23: no page visit is needed to reject late bids; next detail access finalizes result" time="0.014949" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="CLOSE-02: active auction detail request does not close it prematurely" time="0.005687" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="CLOSE-03: failure while storing result rolls back CLOSED status; later access can retry" time="0.012568" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="CLOSE-04: queued bid and closure after deadline cannot create a late winner" time="0.058423" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="CLOSE-05: bid validated before deadline commits before waiting closure and becomes the winner" time="2.069231" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/bidding-closure.test.js"/>
+	<testcase name="DB-01: migration creates exactly the ten Stage 3 core tables, each with a primary key" time="0.106331" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-02: account, category and session identifiers are unique; account roles are constrained" time="0.015778" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-03: foreign keys reject orphan listings, images, sessions, bids and grants" time="0.032081" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-04: all listing, auction, visibility and commitment status enums reject invalid values" time="0.019338" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-05: prices/increments are positive and auction end must follow start" time="0.020752" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-06: one auction per listing; private codes require hashes and public codes must be null" time="0.019194" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-07: a user can have only one private grant and one commitment per auction" time="0.007047" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-08 / QA-09: request UUID is globally unique and money uses numeric(14,2)" time="0.016335" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-09 / QA-20: composite foreign key prevents a winner from another auction" time="0.010041" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-10 / QA-12/13: nullable winner supports no bids; result is unique per auction" time="0.006413" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-11: deleting an unauctioned item cascades its image references; deleting a free account cascades sessions" time="0.005561" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="DB-12: timestamps are timezone-aware and the four defined lookup indexes exist" time="0.007556" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/database.test.js"/>
+	<testcase name="LIST-01: authenticated owner creates a JSON listing in PENDING_REVIEW with category fields" time="0.116572" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="LIST-02: missing auth and invalid listing fields do not create listings" time="0.014538" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="LIST-03: only owner or ADMIN can read an individual listing; lists are owner-scoped" time="0.019004" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="QA-03: USER cannot review; ADMIN approval records reviewer and review time" time="0.007964" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="QA-17: rejection includes reason; owner resubmission clears the prior review" time="0.008497" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="LIST-04: another user cannot resubmit a rejected listing; approved auction listing is locked" time="0.007911" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="QA-04: pending/rejected listings and another owner's approved listing cannot be auctioned" time="0.011513" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="AUCT-01: auction starts at starting price; invalid money/schedule and duplicate item are rejected" time="0.013762" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="PRIVATE-01: private creation returns code only to owner, stores a hash and stays out of discovery" time="0.545886" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="QA-05: wrong private invitation code creates no access grant" time="0.007693" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="PRIVATE-02: correct invitation grants access idempotently; owner cannot join as bidder" time="0.018012" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="QA-06: direct private details/history/bidding/commitment require an access grant" time="0.017925" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="COMMIT-01 / QA-07 partial: unavailable bank fails closed; browser SUCCESS and repeated requests do not approve" time="0.011288" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="COMMIT-02: commitment status is scoped to the caller and owner cannot initiate" time="0.009885" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<testcase name="QA-21 API only: My Activity includes own listing/auction and bids in another auction" time="0.012747" classname="test" file="[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/marketplace.test.js"/>
+	<!-- tests 84 -->
+	<!-- suites 0 -->
+	<!-- pass 73 -->
+	<!-- fail 7 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 4 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 12618.827542 -->
+</testsuites>

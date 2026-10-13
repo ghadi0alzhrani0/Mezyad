@@ -1,0 +1,26 @@
+{
+  "dateUtc": "2026-10-13T17:28:55.453364+00:00",
+  "results": [
+    {
+      "check": "creation",
+      "command": "node scripts/seed-qa.js qa_qa_seed_evidence",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    },
+    {
+      "check": "repeat-protection",
+      "command": "node scripts/seed-qa.js qa_qa_seed_evidence",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": true
+    },
+    {
+      "check": "unsafe-db-protection",
+      "command": "node scripts/seed-qa.js qa_qa_seed_unsafe",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": true
+    }
+  ]
+}

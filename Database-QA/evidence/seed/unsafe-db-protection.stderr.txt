@@ -1,0 +1,19 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Only a disposable database ending in _test is allowed
+    at testDatabase (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/helpers/qa-fixtures.js:14:10)
+    at file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/scripts/seed-qa.js:8:11
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: '/production',
+  expected: /_test$/,
+  operator: 'match',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

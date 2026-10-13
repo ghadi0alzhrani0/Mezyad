@@ -1,0 +1,1 @@
+Seed failed; transaction rolled back: 42P06

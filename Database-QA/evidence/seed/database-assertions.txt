@@ -1,0 +1,10 @@
+users=4
+categories=5
+listings=6
+auctions=4
+grants=1
+commitments=2
+verified_bank_success=0
+bids=0
+results=0
+transient_schemas=0

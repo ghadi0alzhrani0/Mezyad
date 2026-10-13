@@ -1,0 +1,229 @@
+✖ GAP-01: Stage 3 multipart listing accepts a valid PNG and persists its image reference (174.243458ms)
+✖ GAP-02 / QA-17: resubmission saves corrected category fields, not only title/description (12.461958ms)
+API error 22P02
+✖ GAP-03: invalid UUID on admin review is a client error, not an internal server failure (3.783542ms)
+API error 22001
+✖ GAP-04: overlong listing title is rejected with 400 before a PostgreSQL error (9.609583ms)
+✖ GAP-05: whitespace-only rejection reason is rejected and listing remains pending (11.494541ms)
+✖ GAP-06 / QA-06: private bid denial does not disclose whether the auction exists (10.680667ms)
+✖ GAP-07: public auction status filter excludes auctions in other states (13.171834ms)
+﹣ BLOCK-01 / QA-07: genuine provider success/rejection/timeout/authentication/response verification (0.355583ms) # Stage 3 provider, operation, consent contract and sandbox credentials have not been verified
+﹣ BLOCK-02 / QA-22: MIME/extension/size/storage acceptance through the real image upload pipeline (0.059041ms) # Multipart image upload is absent; approved file limits and storage backend are unspecified (see GAP-01)
+﹣ BLOCK-03 / QA-14/15/16: complete public/private browser journeys and UX states (0.061959ms) # QA package tests the database and API; full browser E2E belongs to Frontend + QA review and requires remaining UI/bank work
+﹣ BLOCK-04: private-code throttle policy returns 429 at its configured limit (0.040708ms) # No throttle implementation or approved threshold/window exists; source review records this security gap
+✔ invalid registration is rejected at the HTTP boundary without requiring a database (38.739291ms)
+✔ incomplete login returns a clear 400 response (9.144167ms)
+✔ malformed JSON is rejected without echoing sensitive input (2.412708ms)
+✔ oversized account request is rejected before processing (2.679375ms)
+✔ missing and malformed bearer tokens cannot reach protected handlers (3.489875ms)
+▶ account integration against PostgreSQL
+  ✔ registration normalizes identity, stores a password hash and creates USER (541.724541ms)
+  ✔ QA-01: duplicate normalized email returns 409 without another user (528.593792ms)
+  ✔ concurrent duplicate registrations create exactly one account (521.016792ms)
+  ✔ login returns an opaque token, stores only its hash and protects responses from caching (518.742375ms)
+  ✔ QA-02: wrong password and unknown email have the same 401 response and create no session (519.905333ms)
+  ✔ valid session accesses the protected endpoint and logout revokes it (529.612083ms)
+  ✔ logout revokes only the current session (788.485291ms)
+  ✔ expired session is rejected by the server (520.707875ms)
+  ✔ missing, tampered and forged tokens cannot access protected routes (6.449833ms)
+  ✔ QA-03: USER cannot approve listings, while a database-provisioned ADMIN can (1041.509042ms)
+  ✔ legacy auth URLs remain compatible with existing clients (520.886584ms)
+  ✔ public auction cards return the title and image belonging to their own listing (528.344458ms)
+  ✔ auction details contain only images and description of the requested listing (529.718875ms)
+  ✔ private listing images and title are not exposed in public discovery or direct guest access (790.719125ms)
+✔ account integration against PostgreSQL (7940.74475ms)
+✔ GET /health returns status ok (20.536292ms)
+✔ money validation (0.343208ms)
+✔ BID-01: authentication, UUID and money validation reject invalid requests (162.597709ms)
+✔ QA-03A: owner cannot bid even with a synthetic SUCCESS commitment (7.200709ms)
+✔ QA-03B: the same USER can own an auction and bid in another owner's auction (9.121417ms)
+✔ BID-02: missing, PENDING and FAILED commitments cannot authorize bids (14.913208ms)
+✔ QA-18: first bid at starting price is accepted and price/history update together (10.02125ms)
+✔ QA-08: first bid below starting price is rejected without changing price (6.290375ms)
+✔ QA-19: later bid enforces increment; exact increment is accepted (15.782584ms)
+✔ BID-03: decimal increments retain exact cents without floating point drift (14.654042ms)
+✔ QA-11: scheduled, expired and CLOSED auctions reject bids using server state/time (16.036417ms)
+✔ QA-09: a retried request UUID accepts at most one bid (9.719125ms)
+✔ QA-09 concurrent replay: two waiting requests with the same UUID produce one accepted bid (38.184417ms)
+✔ QA-10: two simultaneous same-price bids serialize; loser sees the updated price (37.96675ms)
+✔ BID-04: reused request UUID across auctions rolls back the losing auction price (10.176125ms)
+API error P0001
+✔ BID-05: database failure after bid insertion rolls back bid and price atomically (15.17725ms)
+✔ BID-06 / QA-11: bid waiting on a row lock revalidates the deadline after the lock (29.550333ms)
+✔ BID-07: private grant plus synthetic commitment permits a bid; history stays auction-specific (17.929791ms)
+✔ QA-12: ended auction without bids closes with a null winner (7.913833ms)
+✔ CLOSE-01: highest accepted bid determines winner and belongs to that auction (17.092917ms)
+✔ QA-13: repeated and concurrent detail requests preserve one stable closure result (22.118ms)
+✔ QA-23: no page visit is needed to reject late bids; next detail access finalizes result (14.948583ms)
+✔ CLOSE-02: active auction detail request does not close it prematurely (5.6875ms)
+API error P0001
+✔ CLOSE-03: failure while storing result rolls back CLOSED status; later access can retry (12.5685ms)
+✔ CLOSE-04: queued bid and closure after deadline cannot create a late winner (58.423083ms)
+✔ CLOSE-05: bid validated before deadline commits before waiting closure and becomes the winner (2069.231417ms)
+✔ DB-01: migration creates exactly the ten Stage 3 core tables, each with a primary key (106.331458ms)
+✔ DB-02: account, category and session identifiers are unique; account roles are constrained (15.777666ms)
+✔ DB-03: foreign keys reject orphan listings, images, sessions, bids and grants (32.080917ms)
+✔ DB-04: all listing, auction, visibility and commitment status enums reject invalid values (19.337959ms)
+✔ DB-05: prices/increments are positive and auction end must follow start (20.751792ms)
+✔ DB-06: one auction per listing; private codes require hashes and public codes must be null (19.193791ms)
+✔ DB-07: a user can have only one private grant and one commitment per auction (7.047166ms)
+✔ DB-08 / QA-09: request UUID is globally unique and money uses numeric(14,2) (16.334583ms)
+✔ DB-09 / QA-20: composite foreign key prevents a winner from another auction (10.041125ms)
+✔ DB-10 / QA-12/13: nullable winner supports no bids; result is unique per auction (6.41325ms)
+✔ DB-11: deleting an unauctioned item cascades its image references; deleting a free account cascades sessions (5.560917ms)
+✔ DB-12: timestamps are timezone-aware and the four defined lookup indexes exist (7.555709ms)
+✔ LIST-01: authenticated owner creates a JSON listing in PENDING_REVIEW with category fields (116.571709ms)
+✔ LIST-02: missing auth and invalid listing fields do not create listings (14.538125ms)
+✔ LIST-03: only owner or ADMIN can read an individual listing; lists are owner-scoped (19.004292ms)
+✔ QA-03: USER cannot review; ADMIN approval records reviewer and review time (7.963875ms)
+✔ QA-17: rejection includes reason; owner resubmission clears the prior review (8.496792ms)
+✔ LIST-04: another user cannot resubmit a rejected listing; approved auction listing is locked (7.911375ms)
+✔ QA-04: pending/rejected listings and another owner's approved listing cannot be auctioned (11.513334ms)
+✔ AUCT-01: auction starts at starting price; invalid money/schedule and duplicate item are rejected (13.76175ms)
+✔ PRIVATE-01: private creation returns code only to owner, stores a hash and stays out of discovery (545.886334ms)
+✔ QA-05: wrong private invitation code creates no access grant (7.692708ms)
+✔ PRIVATE-02: correct invitation grants access idempotently; owner cannot join as bidder (18.012458ms)
+✔ QA-06: direct private details/history/bidding/commitment require an access grant (17.924917ms)
+✔ COMMIT-01 / QA-07 partial: unavailable bank fails closed; browser SUCCESS and repeated requests do not approve (11.288083ms)
+✔ COMMIT-02: commitment status is scoped to the caller and owner cannot initiate (9.885ms)
+✔ QA-21 API only: My Activity includes own listing/auction and bids in another auction (12.746875ms)
+ℹ tests 84
+ℹ suites 0
+ℹ pass 73
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 4
+ℹ todo 0
+ℹ duration_ms 12618.827542
+
+✖ failing tests:
+
+test at tests/acceptance/qa.contract-gaps.test.js:11:24
+✖ GAP-01: Stage 3 multipart listing accepts a valid PNG and persists its image reference (174.243458ms)
+  AssertionError [ERR_ASSERTION]: {"error":{"code":"INVALID_INPUT","message":"Valid listing fields required"}}
+  
+  400 !== 201
+  
+      at TestContext.<anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:22:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 400,
+    expected: 201,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/acceptance/qa.contract-gaps.test.js:11:24
+✖ GAP-02 / QA-17: resubmission saves corrected category fields, not only title/description (12.461958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   fixtureVersion: 'old'
+  -   fixtureVersion: 'corrected'
+    }
+  
+      at TestContext.<anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:31:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { fixtureVersion: 'old' },
+    expected: { fixtureVersion: 'corrected' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/acceptance/qa.contract-gaps.test.js:11:24
+✖ GAP-03: invalid UUID on admin review is a client error, not an internal server failure (3.783542ms)
+  AssertionError [ERR_ASSERTION]: {"error":{"code":"INTERNAL_ERROR","message":"Unexpected server error"}}
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:36:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/acceptance/qa.contract-gaps.test.js:11:24
+✖ GAP-04: overlong listing title is rejected with 400 before a PostgreSQL error (9.609583ms)
+  AssertionError [ERR_ASSERTION]: {"error":{"code":"INTERNAL_ERROR","message":"Unexpected server error"}}
+  
+  500 !== 400
+  
+      at TestContext.<anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:42:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/acceptance/qa.contract-gaps.test.js:11:24
+✖ GAP-05: whitespace-only rejection reason is rejected and listing remains pending (11.494541ms)
+  AssertionError [ERR_ASSERTION]: {"data":{"id":"660ae414-43b2-49e0-ab9e-d9a20e03fbf6","seller_id":"3c20f7eb-418d-42f4-9a2d-ff27f61307cc","category_id":"e5deb1db-b7d4-4565-893f-7cc99ed108c1","title":"Synthetic QA listing","description":"Synthetic test data; not a real customer listing.","category_fields":{},"status":"REJECTED","review_reason":"   ","reviewed_by":"6f6ae085-61f3-4b29-8846-af87c79bfce3","reviewed_at":"2026-10-13T17:34:24.959Z"}}
+  
+  200 !== 400
+  
+      at TestContext.<anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:48:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 400,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/acceptance/qa.contract-gaps.test.js:11:24
+✖ GAP-06 / QA-06: private bid denial does not disclose whether the auction exists (10.680667ms)
+  AssertionError [ERR_ASSERTION]: {"hidden":{"status":403,"json":{"error":{"code":"NO_ACCESS","message":"Private access required"}}},"missing":{"status":404,"json":{"error":{"code":"NOT_FOUND","message":"Auction not found"}}}}
+  
+  403 !== 404
+  
+      at TestContext.<anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:56:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 403,
+    expected: 404,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/acceptance/qa.contract-gaps.test.js:11:24
+✖ GAP-07: public auction status filter excludes auctions in other states (13.171834ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file://[local-user]/Documents/Codex/2026-09-25/new-chat-2/work/project-qa-handoff-work/backend/tests/acceptance/qa.contract-gaps.test.js:66:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

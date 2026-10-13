@@ -1,0 +1,29 @@
+{
+  "schema": "qa_qa_seed_evidence",
+  "accountEmails": [
+    "qa.qa.seller@example.invalid",
+    "qa.qa.bidder@example.invalid",
+    "qa.qa.second@example.invalid",
+    "qa.qa.admin@example.invalid"
+  ],
+  "listingIds": {
+    "pending": "75da1260-7eda-405b-a0b7-a20a044d653f",
+    "rejected": "cfedc61e-6670-4264-a590-1913cff3350b",
+    "approved": "170dc6db-e2c2-4d6a-83f2-bd681fb2e6ba",
+    "private": "582a12ca-ffb5-45de-8f0a-6a3edfa3ad1c",
+    "ended": "28dd3ce9-3910-4419-922a-dc380b1f2443",
+    "future": "75cb2e4a-ca11-4318-8059-4e62c59c4056"
+  },
+  "auctionIds": {
+    "approved": "326bd32e-2779-419a-9c82-9651ed3ec700",
+    "private": "a3bcbaf5-cbf3-4985-adc8-b6c001db260a",
+    "ended": "83a0575c-f46f-4f95-8fa0-b1f3b5c846a4",
+    "future": "d638868f-895a-4ff8-b45b-1dbae5502742"
+  },
+  "password": "Use QA_SEED_PASSWORD or the documented LOCAL-ONLY default; no password logged",
+  "privateCode": "QA-local-private-code-only",
+  "bankSuccessRecords": 0,
+  "bidRecords": 0,
+  "resultRecords": 0,
+  "notice": "All records are synthetic. Existing tables/data are untouched. Use this schema explicitly in DATABASE_URL options."
+}

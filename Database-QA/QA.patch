@@ -1,0 +1,1218 @@
+diff --git a/Stage_4/Bug_Tracker.md b/Stage_4/Bug_Tracker.md
+index 22e0653..44e8388 100644
+--- a/Stage_4/Bug_Tracker.md
++++ b/Stage_4/Bug_Tracker.md
+@@ -38,3 +38,26 @@
+ **Fix PR/commit:**  
+ **Retest date/result:**  
+ **State:** Open / In Progress / Fixed / Verified / Closed
++
++## Database/API QA findings — 13 October 2026
++
++See [Database and API QA Report](QA_Report.md#6-reproduced-findings) for actual
++reproduction, expected/observed output, priority and owner. The `QA-*`
++namespace is separate from the existing IDs above.
++
++| ID | Observed issue | Priority | Status |
++|---|---|---|---|
++| QA-F01 | Valid multipart listing image request returns 400; upload pipeline absent | High | Open |
++| QA-F02 | Resubmission ignores corrected category fields | Medium | Open |
++| QA-F03 | Invalid admin-review UUID causes 500 / PostgreSQL 22P02 | Medium | Open |
++| QA-F04 | Title beyond the 240-character storage limit causes 500 / 22001 | Medium | Open |
++| QA-F05 | Whitespace-only rejection reason is accepted | Medium | Open |
++| QA-F06 | Private bid error differs from nonexistent-auction error, revealing existence | High | Open |
++| QA-F07 | Public auction status filter is ignored | Medium | Open |
++| QA-R01 | Invalid private-code throttling missing; threshold/window require owner decision | High | Pending Owner Review |
++
++Existing GAP-04 now has local database/API execution evidence: 51 new supported
++scenarios pass, including concurrency and closure. This closes the *lack of
++local tests* for those scenarios; it does not complete the genuine banking
++dependency, browser E2E, peer review or full marketplace acceptance. Existing
++GAP-01/02/03/05 remain unresolved. None of these new findings was silently fixed.
+diff --git a/Stage_4/QA_Report.md b/Stage_4/QA_Report.md
+new file mode 100644
+index 0000000..c8fb345
+--- /dev/null
++++ b/Stage_4/QA_Report.md
+@@ -0,0 +1,172 @@
++# Database and API QA Report
++
++**Prepared:** 13 October 2026. **Scope:** Database validation, synthetic seed data, API authorization, bidding concurrency, closure and integration review responsibilities. The reported results come from prior local automated execution. Individual execution or teammate review is not inferred from this handoff.
++
++**Tested application baseline:** `d34d8cea88dcb308637f3610aa8f9373252aad08`, fetched from `main`. Only QA files, two backend script entries and Stage 4 evidence are proposed in this handoff. Application source, the existing migration, frontend assets and Stage 1–3 deliverables were not changed.
++
++**Release decision: NOT READY for complete Stage 3 acceptance.** Supported database/API scenarios pass, but seven contract checks fail and four explicit test gates are skipped. A passing `npm test` alone is not a full marketplace acceptance result.
++
++## 1. Files and responsibility
++
++| File | Purpose |
++|---|---|
++| `backend/tests/database.test.js` | Twelve executable schema, relationship, status, uniqueness, money and index checks. |
++| `backend/tests/marketplace.test.js` | Fifteen listing, review, ownership, private-access, commitment-boundary and activity API scenarios. |
++| `backend/tests/bidding-closure.test.js` | Twenty-four bidding, duplicate-request, rollback, concurrent-lock, deadline and result scenarios. |
++| `backend/tests/helpers/qa-fixtures.js` | Per-process disposable schemas, fake accounts/sessions and controlled lock synchronization. |
++| `backend/tests/acceptance/qa.contract-gaps.test.js` | Seven unmet contract checks. They fail normally until the application is corrected; failures are not suppressed. |
++| `backend/tests/acceptance/qa.external-blockers.test.js` | Four explicitly skipped external/incomplete gates, with reasons. |
++| `backend/scripts/seed-qa.js` | Opt-in fake seed in a new isolated schema. Never creates banking SUCCESS, bids or results. |
++| `backend/scripts/run-qa.js` | Runs existing backend regression plus all new QA/acceptance files; writes stdout, stderr, JUnit and a hash-bearing JSON summary. |
++| `backend/package.json` | Adds `test:qa` and `seed:qa`; no dependencies or existing commands removed. |
++
++The package contains no replacement database design. The current `database/migrations/001_schema.sql` is executed and tested unchanged. The same USER account acts as seller and bidder; an ADMIN test fixture is provisioned directly in the isolated database, not through public registration.
++
++## 2. Prior executed results and renamed-file verification
++
++**Evidence provenance:** The results below are from the previously executed local QA run. This handoff changes names and labels only. Database tests were not re-executed after renaming. Commands in this table are their equivalent current names, not claims of a new run. Syntax and import paths of the delivered files were checked separately.
++
++**Environment:** macOS / arm64; Node.js 24.19.0; PostgreSQL 16.15 in a dedicated local Docker container; Vite 6.4.4; Vitest 4.1.11. Backend full-run start: `2026-10-13T17:34:24.651Z` (20:34:24 Riyadh). No screenshots or browser recordings were taken.
++
++| Command/check | Actual result |
++|---|---|
++| `cd backend && npm ci` | Successful clean dependency installation using the existing lockfile. |
++| `cd frontend && npm ci` | Successful clean dependency installation using the existing lockfile. |
++| `cd backend && npm run check` | PASS — existing backend syntax checks. |
++| `node --check` on eight added JavaScript files | PASS — all eight parse successfully. |
++| `cd backend && TEST_DATABASE_URL=… npm test` | PASS — 73 runner entries, 73 passed, 0 failed, 0 skipped. Includes existing regression and 51 new supported-scenario tests. |
++| `cd backend && TEST_DATABASE_URL=… node scripts/run-qa.js <evidence-dir>` | FAIL — 84 runner entries: 73 passed, 7 failed, 4 skipped, 0 cancelled. Exit code 1 is expected while the documented application gaps remain. |
++| `cd frontend && npm test` | PASS — 30 tests across three files. These are existing component/client tests, not new browser E2E evidence. |
++| `cd frontend && npm run build` | PASS — 33 modules transformed and a production bundle generated. |
++| `node scripts/seed-qa.js qa_seed_evidence` | PASS — four fake accounts, five categories, six listings, four auctions, one private grant, two non-success commitments. |
++| Repeat seed into the same schema | PASS guard — exit 1 with PostgreSQL `42P06`; existing seed was not overwritten. |
++| Seed with a database name not ending in `_test` | PASS guard — rejected before connecting, exit 1. |
++| Seed row assertions | PASS — zero SUCCESS commitments, zero bids, zero results. |
++| Test cleanup | PASS — no transient `qa_*` test schemas left after execution; opt-in seed schemas remain intentionally separate. |
++
++Node's totals include the existing account integration parent entry. JUnit contains **83 leaf cases: 72 passed, 7 failed, 4 skipped**. The new QA files contribute **62 leaf cases: 51 passed, 7 failed, 4 skipped**. These are counts of executable scenarios, not counts of distinct Stage 3 QA IDs.
++
++The previous local outputs are supplied under `evidence/`. Personal names and local paths were normalized; numeric results and failure observations were preserved. Their original hashes are recorded separately. These are historical execution records, not a new database run after renaming. The package has not been committed, pushed or run in GitHub CI.
++
++## 3. Database review
++
++| Area | Verified finding | Evidence |
++|---|---|---|
++| Core schema | Exactly ten core tables, each with a primary key. No separate seller/bidder tables. | DB-01 |
++| Accounts/sessions | Unique email and token hash; role restricted to USER/ADMIN; session user FK and cascade. | DB-02/03/11 |
++| Listing relationships | Seller/category references reject orphans; images reference their item and cascade when an unauctioned item is deleted. | DB-03/11 |
++| Approval state | PENDING_REVIEW/APPROVED/REJECTED checks; owner and admin rules enforced by the existing API. | DB-04; LIST-03/04; QA-03/04/17 |
++| Auction relationship | Unique item ID permits one auction per listing. | DB-06; AUCT-01 |
++| Visibility | PUBLIC requires no code hash; PRIVATE requires one. Creation stores a bcrypt hash and returns the raw code only to the creator. | DB-06; PRIVATE-01 |
++| Grants/commitments | Unique `(auction_id,user_id)` for access and commitment; commitment status check. | DB-04/07 |
++| Money/schedule | Four monetary columns use numeric(14,2); positive price/increment checks; end follows start. | DB-05/08 |
++| Bid identity | Global unique request UUID; composite unique `(auction_id,id)` supports the result reference. | DB-08/09; QA-09 |
++| Result integrity | One result per auction; nullable winner for no bids; composite FK rejects a winner from another auction. | DB-09/10; QA-12/13/20 |
++| Time/indexes | Nine timestamp fields use `timestamptz`; all four named lookup indexes exist. | DB-12 |
++| Application-owned rules | Own-auction bidding, approved listing ownership and successful commitment checks remain backend responsibilities. No unapproved schema extension was introduced. | QA-03A/B/04; BID-02 |
++
++SQL constraint tests intentionally provoke errors such as `23503`, `23505` and `23514` and assert those exact codes. Controlled failure-injection triggers exist only inside disposable test schemas and are removed; they are not migrations or application changes.
++
++## 4. Concurrency and closure evidence
++
++- Two clients queue behind a deliberately held auction row lock. `pg_stat_activity` confirms both are waiting before the lock is released. One same-price bid succeeds; the other receives `BID_TOO_LOW`. A subsequent valid increment succeeds.
++- Two requests sharing one UUID yield one accepted bid and one duplicate response. Cross-auction UUID reuse also leaves the losing auction's price unchanged.
++- A database failure after bid insertion proves the entire transaction rolls back: no saved bid and no changed price. Removing the test fault allows a fresh request to succeed.
++- A bid waiting on a row lock receives updated state after release and rejects an expired deadline. Server time is evaluated after the wait.
++- Ended auctions close with either the highest accepted bid or a null winner. Concurrent/repeated detail requests persist one stable result.
++- Failure during result insertion rolls back CLOSED status and allows a later request to retry.
++- In one controlled race, a bid and closure both proceed after the deadline: no late bid or winner is created. In another, a bid validates before the deadline and holds the row while closure waits; it commits and becomes the winning result.
++- No detail visit is needed for late-bid rejection. The next detail request finalizes the result, matching Stage 3's access-triggered closure design.
++
++Successful commitments used to reach bidding code paths are direct **synthetic database fixtures** marked `LOCAL_QA_FIXTURE_NOT_BANK_VERIFIED`. They test downstream rules only. No real provider response, balance, reservation, payment, eligibility approval or transfer is claimed.
++
++## 5. Stage 3 QA traceability
++
++| ID | Latest result in this handoff | Executable evidence / limitation |
++|---|---|---|
++| QA-01 | PASS | Existing PostgreSQL account duplicate-email regression, rerun. |
++| QA-02 | PASS | Existing wrong-password/no-session regression, rerun. |
++| QA-03 | PASS | USER denied, trusted ADMIN review allowed and reviewer persisted. |
++| QA-03A | PASS with synthetic commitment | Own-auction bid denied. |
++| QA-03B | PASS with synthetic commitment | Same USER owns one auction and bids in another. |
++| QA-04 | PASS API approval/ownership boundary | Pending/rejected or another owner's listing cannot be auctioned. Image contract remains incomplete. |
++| QA-05 | PASS wrong-code boundary; security gate incomplete | Wrong code saves no grant; brute-force throttling remains absent. |
++| QA-06 | PARTIAL | Private data/bids denied without grant, but error differences expose existence (QA-F06). |
++| QA-07 | PARTIAL / genuine integration BLOCKED | Local unavailable-provider response fails closed; no false SUCCESS. Real provider failure/timeout not tested. |
++| QA-08 | PASS with synthetic commitment | Low first bid rejected; price unchanged. |
++| QA-09 | PASS with synthetic commitment | Sequential/concurrent retries and cross-auction UUID collision. |
++| QA-10 | PASS with synthetic commitment | Two actual PostgreSQL clients, observed row-lock waiting and consistent prices. |
++| QA-11 | PASS with synthetic commitment | Scheduled/expired/closed denial, lock-wait deadline revalidation. |
++| QA-12 | PASS | No-bid closure has null winner. |
++| QA-13 | PASS | Repeated/concurrent closure yields one stable result. |
++| QA-14 | PARTIAL existing React regression only | Account loading/error tests rerun; complete marketplace UX not tested. |
++| QA-15 | NOT RUN / BLOCKED complete browser journey | API components tested separately; genuine commitment and remaining UI needed. |
++| QA-16 | NOT RUN / BLOCKED complete browser journey | Private API components tested separately; not a complete browser E2E. |
++| QA-17 | PARTIAL | Title/description resubmission and review reset pass; corrected category fields are ignored (QA-F02). |
++| QA-18 | PASS with synthetic commitment | First bid equals starting price. |
++| QA-19 | PASS with synthetic commitment | Later bid requires last price plus increment, including decimal cents. |
++| QA-20 | PASS | Composite FK refuses winning bid from another auction. |
++| QA-21 | PARTIAL — API PASS | `/me/items` and `/me/auctions` include own listing/auction and other bids; My Activity browser screen not tested. |
++| QA-22 | BLOCKED | Real upload pipeline missing (QA-F01); MIME/extension/size limits and storage need agreement. |
++| QA-23 | PASS with synthetic commitment | Late bid rejected before page access; next detail request finalizes result. |
++
++## 6. Reproduced findings
++
++All findings below are **OPEN**. Fix ownership follows the backend team, with the QA team verifying the relevant QA cases. No fixing PR or verified retest is claimed. `GAP-*` below names the new acceptance test; `QA-F*` is the defect namespace and does not replace the existing Bug Tracker IDs.
++
++| Finding | Priority | Stage 3 basis | Reproduction and actual result | Expected / next action |
++|---|---|---|---|---|
++| QA-F01 / GAP-01 | High | §7.1–7.2 listing multipart/images | Submit a valid 1×1 PNG with listing fields. API returns 400 `INVALID_INPUT`, not a saved listing/image. | Implement the upload contract after owner chooses field names, types, sizes and storage. Then run valid/invalid image checks. |
++| QA-F02 / GAP-02 | Medium | §5.3 and §7.2 rejected listing corrected fields | PATCH a rejected listing with changed `categoryFields`. Response is 200 but JSON retains the old values. | Persist validated category-specific changes on resubmission and apply corresponding image edits when available. |
++| QA-F03 / GAP-03 | Medium | §7.1 validation/client errors | ADMIN reviews `/admin/items/not-a-uuid/review`. Response is 500; DB code `22P02`. | Validate identifier before SQL and return a documented safe 400. Inspect other unvalidated ID routes too. |
++| QA-F04 / GAP-04 | Medium | §5.2 title storage and §7.2 listing validation | POST title of 241 characters. Response is 500; DB code `22001`. | Enforce the existing 240-character storage limit at the request boundary, return 400 and preserve no listing. |
++| QA-F05 / GAP-05 | Medium | §5.3 admin rejection reason | Reject with three spaces as reason. Response is 200 and stores an empty meaningful reason. | Trim and reject blank reasons before updating review state. This is semantic validation, not a scope change. |
++| QA-F06 / GAP-06 | High | §5.3 and §7.1 private existence protection | Unauthorized private bid returns 403 `NO_ACCESS`; nonexistent auction returns 404 `NOT_FOUND`. | Align safe denial envelopes so outsiders cannot distinguish private existence; retain internal audit reasons. |
++| QA-F07 / GAP-07 | Medium | §7.2 public filters/status | GET `/auctions?status=CLOSED` returns an active auction too. | Implement and document server-side status filtering, validate values and define remaining filter/paging parameters. |
++
++One additional security gap was confirmed by source inspection: no invalid-code attempt limiter is installed on `/auctions/:id/access`. No numeric throttling threshold/window is specified, so a bounded brute-force test was not invented. **QA-R01: High; Pending Owner Review** — agree the policy and implement/test 429 throttling.
++
++## 7. Pending decisions and remaining work
++
++| Item | State / impact | Next owner action |
++|---|---|---|
++| Banking provider, authorized sandbox operation, credentials and consent/result mapping | BLOCKED genuine commitment success/failure/timeout. Current API safely returns 503 and creates no approval. | Backend pair/project owner verifies the Stage 3 integration contract. The QA team then tests actual outcomes with redacted evidence. |
++| Image field names, allowed MIME/extensions, byte limit and storage | Missing contract details plus missing implementation; QA-22 cannot run meaningfully. | Owner/backend pair specifies limits and storage; the frontend team connects UI. |
++| Private-code limit/window and safe-denial policy | Security gap; exact throttle acceptance threshold unavailable. | Backend pair/owner agrees policy; The QA team adds executable 429 checks. |
++| Public filters and bid-history paging names/defaults | Status filter currently ignored; other parameter names/defaults are unspecified. | Complete the API contract separately, preserving Stage 3 until owner review. |
++| Category-specific required fields | `category_fields` accepts a JSON object but category-specific required fields/ranges are unspecified. | Owner defines each category's rules; QA adds positive/negative boundaries. |
++| Browser public/private/listing/admin/bid/result journeys | NOT RUN as complete E2E here; existing React tests only provide component/client regression. | The QA team executes after remaining UI/provider work, without claiming fixture success as bank proof. |
++| Reviews/stand-ups/retrospectives | No meeting evidence was generated or inferred. | Team records actual events. |
++
++## 8. Re-run and handoff
++
++From `backend`, set `TEST_DATABASE_URL` to a dedicated PostgreSQL database whose name ends in `_test`, then run:
++
++```sh
++npm ci
++npm run check
++npm test
++npm run test:qa -- /tmp/database-evidence
++```
++
++The complete runner initializes the existing schema in that disposable database for account regressions, then isolates new fixtures in per-process schemas. It never falls back to `DATABASE_URL` when `TEST_DATABASE_URL` is missing. `test:qa` should currently return exit 1 because seven acceptance checks genuinely fail. Do not omit those checks or relabel them as passes.
++
++Optional seed:
++
++```sh
++npm run seed:qa -- qa_seed
++```
++
++The seed requires the same `_test` guard, refuses an existing schema, and uses `example.invalid` identities. Its documented default password is strictly a local fake-fixture credential. Set `QA_SEED_PASSWORD` if needed; no password is printed in the generated seed output. Seed scenarios intentionally cannot bypass the genuine banking integration gate.
++
++Before uploading, read the source, re-run against a disposable database, add evidence of the actual run, review findings with the backend team and open a reviewable change. GitHub CI was not executed for this package. Do not mark S4-02 or the entire project DONE solely from this prepared handoff.
++
++## 9. Protected deliverables
++
++`Stage_3/Report.MD` is byte-for-byte unchanged. SHA-256 before and after:
++
++```text
++f41b15604e29da6f0982aa1c6367275307c80c38f8ce5c2ec3f3fd69cc40a11d
++```
++
++The original application source, migrations, seeds, frontend implementation and Stage 1–3 files match the tested baseline. No files were deleted, no GitHub upload occurred and no database/schema design was changed.
+diff --git a/Stage_4/Testing_Report.md b/Stage_4/Testing_Report.md
+index 488dbbf..2902b7c 100644
+--- a/Stage_4/Testing_Report.md
++++ b/Stage_4/Testing_Report.md
+@@ -172,3 +172,27 @@
+ The full marketplace is NOT READY — full E2E, image validation and
+ genuine sandbox integration are not verified. Banking remains blocked by
+ authorized provider access; no real banking test was executed in this work.
++
++## 6. Database/API QA execution evidence — 13 October 2026
++
++The latest local database/API evidence is documented in
++[Database and API QA Report](QA_Report.md). It was executed at a local automated run against
++application baseline `d34d8cea88dcb308637f3610aa8f9373252aad08`; it does not
++claim individual execution or that the package passed GitHub CI.
++
++- 51 new supported-scenario tests pass, including schema constraints, private
++  access, atomic bidding, duplicate requests, controlled two-client concurrency,
++  rollback, deadline revalidation, winner integrity and idempotent closure.
++- The default backend regression run passes 73 runner entries, with no failures
++  or skips. This includes the existing integration parent entry.
++- The complete acceptance run has 84 runner entries: 73 passed, 7 failed and
++  4 skipped gates. Its exit code is 1; full acceptance is not approved.
++- Existing frontend tests pass all 30 cases and the production build succeeds.
++  This does not provide complete browser E2E evidence.
++- Synthetic database SUCCESS fixtures test downstream bidding only. Genuine
++  banking integration, secure image upload and remaining browser flows are
++  incomplete; the seven reproduced findings remain open.
++
++The earlier traceability table records the earlier account-only snapshot. For
++this newer run, use the per-ID status and limitations in the linked report.
++No application source, migration, Stage 1–3 deliverable or UI was changed.
+diff --git a/backend/package.json b/backend/package.json
+index 688b0ae..af37e3d 100644
+--- a/backend/package.json
++++ b/backend/package.json
+@@ -9,7 +9,9 @@
+     "test": "node --test tests/*.test.js",
+     "check": "node --check src/app.js && node --check src/server.js && node --check src/accounts.js && node --check src/auth.js",
+     "test:accounts": "node --test tests/accounts.integration.test.js",
+-    "seed:design-demo": "node scripts/seed-design-demo.js"
++    "seed:design-demo": "node scripts/seed-design-demo.js",
++    "test:qa": "node scripts/run-qa.js",
++    "seed:qa": "node scripts/seed-qa.js"
+   },
+   "dependencies": {
+     "bcryptjs": "^2.4.3",
+diff --git a/backend/scripts/run-qa.js b/backend/scripts/run-qa.js
+new file mode 100644
+index 0000000..febe5b5
+--- /dev/null
++++ b/backend/scripts/run-qa.js
+@@ -0,0 +1,57 @@
++import { spawn } from 'node:child_process';
++import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
++import { createHash } from 'node:crypto';
++import { fileURLToPath } from 'node:url';
++import path from 'node:path';
++import os from 'node:os';
++import pg from 'pg';
++import { testDatabase } from '../tests/helpers/qa-fixtures.js';
++
++const backend=fileURLToPath(new URL('../',import.meta.url));
++const database=testDatabase(process.env.TEST_DATABASE_URL);
++const reportFile=new URL('../../Stage_3/Report.MD',import.meta.url);
++const checksum=async()=>createHash('sha256').update(await readFile(reportFile)).digest('hex');
++const originalChecksum=await checksum();
++const timestamp=new Date().toISOString();
++const output=path.resolve(process.argv[2] || path.join(os.tmpdir(),'database-qa-'+timestamp.replace(/[:.]/g,'-')));
++await mkdir(output,{recursive:true});
++const evidence=path.join(output,'junit.xml');
++const pool=new pg.Pool({connectionString:database.toString()});
++let postgres;
++try {
++  postgres=(await pool.query('SHOW server_version')).rows[0].server_version;
++  // Initialize only the explicitly selected disposable DB for existing account regression tests.
++  await pool.query(await readFile(new URL('../../database/migrations/001_schema.sql',import.meta.url),'utf8'));
++} finally { await pool.end(); }
++const files=(await readdir(path.join(backend,'tests'))).filter(file=>file.endsWith('.test.js')).sort().map(file=>'tests/'+file);
++files.push(...(await readdir(path.join(backend,'tests/acceptance'))).filter(file=>file.startsWith('qa.')&&file.endsWith('.test.js')).sort().map(file=>'tests/acceptance/'+file));
++const args=['--test','--test-concurrency=1','--test-reporter=spec','--test-reporter=junit',
++  '--test-reporter-destination=stdout','--test-reporter-destination='+evidence,...files];
++const started=Date.now();
++const result=await new Promise((resolve,reject)=>{
++  const child=spawn(process.execPath,args,{cwd:backend,env:process.env,stdio:['ignore','pipe','pipe']});
++  let stdout='',stderr='';
++  child.stdout.on('data',chunk=>{stdout+=chunk; process.stdout.write(chunk);});
++  child.stderr.on('data',chunk=>{stderr+=chunk; process.stderr.write(chunk);});
++  child.on('error',reject);
++  child.on('close',(code,signal)=>resolve({code,signal,stdout,stderr}));
++});
++await writeFile(path.join(output,'stdout.txt'),result.stdout);
++await writeFile(path.join(output,'stderr.txt'),result.stderr);
++const count=name=>Number(result.stdout.match(new RegExp('(?:ℹ|#) '+name+' (\\d+)'))?.[1] ?? NaN);
++const finalChecksum=await checksum();
++const sourceHashes={};
++for(const file of ['src/app.js','src/db.js','src/auth.js','src/accounts.js','src/money.js',...files])
++  sourceHashes[file]=createHash('sha256').update(await readFile(path.join(backend,file))).digest('hex');
++const summary={dateUtc:timestamp,executor:'Local automated QA execution; individual execution is not inferred',
++  node:process.version,postgres,platform:os.platform(),arch:os.arch(),
++  command:'node '+args.map(arg=>arg.startsWith('--test-reporter-destination=')&&!arg.endsWith('stdout')?'--test-reporter-destination=<evidence>/junit.xml':arg).join(' '),
++  exitCode:result.code,signal:result.signal,durationMs:Date.now()-started,
++  runnerEntries:count('tests'),passed:count('pass'),failed:count('fail'),skipped:count('skipped'),cancelled:count('cancelled'),
++  countNote:'Runner totals include the existing account integration parent; skipped banking/browser gates are not passes.',
++  stage3Sha256Before:originalChecksum,stage3Sha256After:finalChecksum,stage3Unchanged:originalChecksum===finalChecksum,
++  banking:'Not tested against a genuine provider. SUCCESS fixtures are synthetic database setup only.',sourceHashes};
++await writeFile(path.join(output,'summary.json'),JSON.stringify(summary,null,2)+'\n');
++console.log('\nEvidence saved to '+output);
++if(originalChecksum!==finalChecksum) throw new Error('Protected Stage 3 changed during QA');
++process.exitCode=result.code ?? 1;
+diff --git a/backend/scripts/seed-qa.js b/backend/scripts/seed-qa.js
+new file mode 100644
+index 0000000..510c2fa
+--- /dev/null
++++ b/backend/scripts/seed-qa.js
+@@ -0,0 +1,60 @@
++import { readFile } from 'node:fs/promises';
++import { randomUUID } from 'node:crypto';
++import pg from 'pg';
++import bcrypt from 'bcryptjs';
++import { testDatabase } from '../tests/helpers/qa-fixtures.js';
++
++// Opt-in synthetic seed, in a NEW schema only. Never seed bank SUCCESS here.
++const url=testDatabase(process.env.TEST_DATABASE_URL);
++const schema=process.argv[2] || 'qa_seed';
++if(!/^qa_seed(?:_[a-z0-9_]+)?$/.test(schema)) throw new Error('Use qa_seed or qa_seed_<suffix>');
++const password=process.env.QA_SEED_PASSWORD || 'Local-QA-Only-2026';
++if(Buffer.byteLength(password)<8 || Buffer.byteLength(password)>72) throw new Error('Seed password must be 8–72 UTF-8 bytes');
++const pool=new pg.Pool({connectionString:url.toString()});
++const client=await pool.connect();
++try {
++  await client.query('BEGIN');
++  await client.query('CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public');
++  // CREATE SCHEMA intentionally fails if it exists: no overwrite or destructive reset.
++  await client.query(`CREATE SCHEMA "${schema}"`);
++  await client.query(`SET LOCAL search_path TO "${schema}",public`);
++  await client.query(await readFile(new URL('../../database/migrations/001_schema.sql',import.meta.url),'utf8'));
++  await client.query(await readFile(new URL('../../database/seeds/001_categories.sql',import.meta.url),'utf8'));
++  const hash=await bcrypt.hash(password,12);
++  const users={};
++  for(const [name,role,email] of [
++    ['QA Seller','USER','qa.seller@example.invalid'],
++    ['QA Bidder','USER','qa.bidder@example.invalid'],
++    ['QA Second Bidder','USER','qa.second@example.invalid'],
++    ['QA Administrator','ADMIN','qa.admin@example.invalid'],
++  ]) users[email]=(await client.query('INSERT INTO users(name,email,password_hash,role) VALUES($1,$2,$3,$4) RETURNING id',[name,email,hash,role])).rows[0].id;
++  const category=(await client.query("SELECT id FROM categories WHERE name='Rare Vehicles'")).rows[0].id;
++  const listingIds={},auctionIds={};
++  for(const [name,status] of [['pending','PENDING_REVIEW'],['rejected','REJECTED'],['approved','APPROVED'],['private','APPROVED'],['ended','APPROVED'],['future','APPROVED']]) {
++    listingIds[name]=(await client.query(`INSERT INTO items(seller_id,category_id,title,description,status,review_reason,reviewed_by,reviewed_at,category_fields)
++      VALUES($1,$2,$3,'Fictional QA fixture. No actual item, customer or market facts.',$4,$5,$6,$7,'{"qaFixture":true}') RETURNING id`,
++    [users['qa.seller@example.invalid'],category,'QA '+name+' listing',status,status==='REJECTED'?'Correct the description.':null,
++      status==='PENDING_REVIEW'?null:users['qa.admin@example.invalid'],status==='PENDING_REVIEW'?null:new Date()])).rows[0].id;
++  }
++  const privateCode='Local-private-code-only';
++  const codeHash=await bcrypt.hash(privateCode,12);
++  for(const [name,visibility,start,end] of [
++    ['approved','PUBLIC','-1 hour','1 day'],['private','PRIVATE','-1 hour','1 day'],
++    ['ended','PUBLIC','-2 hours','-1 hour'],['future','PUBLIC','1 day','2 days'],
++  ]) auctionIds[name]=(await client.query(`INSERT INTO auctions(item_id,visibility,access_code_hash,starting_price,current_price,minimum_increment,start_time,end_time)
++    VALUES($1,$2,$3,1000,1000,50,clock_timestamp()+$4::interval,clock_timestamp()+$5::interval) RETURNING id`,
++  [listingIds[name],visibility,visibility==='PRIVATE'?codeHash:null,start,end])).rows[0].id;
++  const bidder=users['qa.bidder@example.invalid'];
++  await client.query('INSERT INTO private_auction_access(auction_id,user_id) VALUES($1,$2)',[auctionIds.private,bidder]);
++  await client.query("INSERT INTO bid_commitments(auction_id,user_id,status,sandbox_reference) VALUES($1,$2,'PENDING','LOCAL_QA_FIXTURE_NOT_BANK_VERIFIED'),($3,$2,'FAILED','LOCAL_QA_FIXTURE_NOT_BANK_VERIFIED')",
++    [auctionIds.approved,bidder,auctionIds.private]);
++  await client.query('COMMIT');
++  console.log(JSON.stringify({schema,accountEmails:Object.keys(users),listingIds,auctionIds,
++    password:'Use QA_SEED_PASSWORD or the documented LOCAL-ONLY default; no password logged',
++    privateCode,bankSuccessRecords:0,bidRecords:0,resultRecords:0,
++    notice:'All records are synthetic. Existing tables/data are untouched. Use this schema explicitly in DATABASE_URL options.'},null,2));
++} catch(error) {
++  await client.query('ROLLBACK');
++  console.error('Seed failed; transaction rolled back:',error.code || error.message);
++  process.exitCode=1;
++} finally { client.release(); await pool.end(); }
+diff --git a/backend/tests/acceptance/qa.contract-gaps.test.js b/backend/tests/acceptance/qa.contract-gaps.test.js
+new file mode 100644
+index 0000000..182281c
+--- /dev/null
++++ b/backend/tests/acceptance/qa.contract-gaps.test.js
+@@ -0,0 +1,67 @@
++import test, { before, after } from 'node:test';
++import assert from 'node:assert/strict';
++import { randomUUID } from 'node:crypto';
++import { setupQa, databaseSkip } from '../helpers/qa-fixtures.js';
++
++// These are acceptance checks, not expected-failure tests. A failing assertion
++// identifies a real gap to fix before the complete Stage 3 contract can pass.
++let q;
++before(async () => { if (!databaseSkip) q=await setupQa('contracts'); });
++after(async () => { if(q) await q.shutdown(); });
++const check=(name,fn)=>test(name,{skip:databaseSkip},fn);
++
++check('GAP-01: Stage 3 multipart listing accepts a valid PNG and persists its image reference',async()=>{
++  const form=new FormData();
++  form.set('categoryId',q.category.id);
++  form.set('category',q.category.id); // exact public field naming still needs clarification
++  form.set('title','Synthetic multipart listing'); form.set('description','A local QA image fixture.');
++  form.set('category_fields','{}');
++  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGP4DwQACfsD/fteaysAAAAASUVORK5CYII=','base64');
++  form.append('images',new Blob([png],{type:'image/png'}),'qa-fixture.png');
++  const result=await q.api('/items',{method:'POST',token:q.seller.token,form});
++  assert.equal(result.status,201,JSON.stringify(result.json));
++  assert.ok((await q.pool.query('SELECT 1 FROM item_images WHERE item_id=$1',[result.json.data.id])).rowCount);
++});
++
++check('GAP-02 / QA-17: resubmission saves corrected category fields, not only title/description',async()=>{
++  const listing=await q.item({status:'REJECTED',fields:{fixtureVersion:'old'}});
++  const result=await q.api('/items/'+listing.id,{method:'PATCH',token:q.seller.token,
++    body:{title:'Corrected',description:'Corrected',categoryFields:{fixtureVersion:'corrected'}}});
++  assert.equal(result.status,200);
++  assert.deepEqual(result.json.data.category_fields,{fixtureVersion:'corrected'});
++});
++
++check('GAP-03: invalid UUID on admin review is a client error, not an internal server failure',async()=>{
++  const result=await q.api('/admin/items/not-a-uuid/review',{method:'POST',token:q.admin.token,body:{decision:'APPROVED'}});
++  assert.equal(result.status,400,JSON.stringify(result.json));
++});
++
++check('GAP-04: overlong listing title is rejected with 400 before a PostgreSQL error',async()=>{
++  const result=await q.api('/items',{method:'POST',token:q.seller.token,
++    body:{categoryId:q.category.id,title:'a'.repeat(241),description:'Synthetic boundary fixture'}});
++  assert.equal(result.status,400,JSON.stringify(result.json));
++});
++
++check('GAP-05: whitespace-only rejection reason is rejected and listing remains pending',async()=>{
++  const listing=await q.item({status:'PENDING_REVIEW'});
++  const result=await q.api('/admin/items/'+listing.id+'/review',{method:'POST',token:q.admin.token,body:{decision:'REJECTED',reason:'   '}});
++  assert.equal(result.status,400,JSON.stringify(result.json));
++  assert.equal((await q.pool.query('SELECT status FROM items WHERE id=$1',[listing.id])).rows[0].status,'PENDING_REVIEW');
++});
++
++check('GAP-06 / QA-06: private bid denial does not disclose whether the auction exists',async()=>{
++  const a=await q.auction({visibility:'PRIVATE'});
++  const hidden=await q.bid(a);
++  const missing=await q.bid({id:randomUUID()});
++  assert.equal(hidden.status,missing.status,JSON.stringify({hidden,missing}));
++  assert.deepEqual(hidden.json,missing.json);
++});
++
++check('GAP-07: public auction status filter excludes auctions in other states',async()=>{
++  const active=await q.auction(),closed=await q.auction({end:'-1 second'});
++  await q.api('/auctions/'+closed.id); // finalize through the actual documented endpoint
++  const result=await q.api('/auctions?status=CLOSED');
++  assert.equal(result.status,200);
++  assert.ok(result.json.data.some(a=>a.id===closed.id));
++  assert.equal(result.json.data.some(a=>a.id===active.id),false);
++});
+diff --git a/backend/tests/acceptance/qa.external-blockers.test.js b/backend/tests/acceptance/qa.external-blockers.test.js
+new file mode 100644
+index 0000000..2a075c7
+--- /dev/null
++++ b/backend/tests/acceptance/qa.external-blockers.test.js
+@@ -0,0 +1,11 @@
++import test from 'node:test';
++
++// Explicit skipped gates, never described as passing tests.
++test('BLOCK-01 / QA-07: genuine provider success/rejection/timeout/authentication/response verification',
++  {skip:'Stage 3 provider, operation, consent contract and sandbox credentials have not been verified'},()=>{});
++test('BLOCK-02 / QA-22: MIME/extension/size/storage acceptance through the real image upload pipeline',
++  {skip:'Multipart image upload is absent; approved file limits and storage backend are unspecified (see GAP-01)'},()=>{});
++test('BLOCK-03 / QA-14/15/16: complete public/private browser journeys and UX states',
++  {skip:'This package tests the database and API; complete browser E2E requires remaining UI/bank work and QA review'},()=>{});
++test('BLOCK-04: private-code throttle policy returns 429 at its configured limit',
++  {skip:'No throttle implementation or approved threshold/window exists; source review records this security gap'},()=>{});
+diff --git a/backend/tests/bidding-closure.test.js b/backend/tests/bidding-closure.test.js
+new file mode 100644
+index 0000000..c5d5344
+--- /dev/null
++++ b/backend/tests/bidding-closure.test.js
+@@ -0,0 +1,297 @@
++import test, { before, after } from 'node:test';
++import assert from 'node:assert/strict';
++import { randomUUID } from 'node:crypto';
++import { setupQa, databaseSkip, expectError } from './helpers/qa-fixtures.js';
++
++let q;
++before(async () => { if (!databaseSkip) q = await setupQa('bidding'); });
++after(async () => { if (q) await q.shutdown(); });
++const check = (name, fn) => test(name, { skip: databaseSkip, timeout:20000 }, fn);
++
++check('BID-01: authentication, UUID and money validation reject invalid requests', async () => {
++  const a=await q.auction();
++  expectError(await q.api('/auctions/'+a.id+'/bids',{method:'POST',body:{amount:1000,requestId:randomUUID()}}),401,'UNAUTHORIZED');
++  for(const body of [{amount:0,requestId:randomUUID()},{amount:1000.001,requestId:randomUUID()},{amount:'1000',requestId:randomUUID()},{amount:1000,requestId:'invalid'}])
++    expectError(await q.api('/auctions/'+a.id+'/bids',{method:'POST',token:q.bidder.token,body}),400,'INVALID_INPUT');
++  assert.equal((await q.state(a)).bid_count,0);
++});
++
++check('QA-03A: owner cannot bid even with a synthetic SUCCESS commitment', async () => {
++  const a=await q.auction();
++  await q.commitment(a,q.seller);
++  expectError(await q.bid(a,1000,q.seller),403,'OWNER');
++  assert.equal((await q.state(a)).bid_count,0);
++});
++
++check('QA-03B: the same USER can own an auction and bid in another owner\'s auction', async () => {
++  const own=await q.auction({owner:q.bidder});
++  const another=await q.auction();
++  await q.commitment(another);
++  assert.equal(q.bidder.role,'USER');
++  assert.equal((await q.bid(another)).status,201);
++  assert.equal((await q.state(own)).bid_count,0);
++});
++
++check('BID-02: missing, PENDING and FAILED commitments cannot authorize bids', async () => {
++  const a=await q.auction();
++  expectError(await q.bid(a),403,'COMMITMENT_REQUIRED');
++  for(const status of ['PENDING','FAILED']) {
++    await q.commitment(a,q.bidder,status);
++    expectError(await q.bid(a),403,'COMMITMENT_REQUIRED');
++  }
++  assert.deepEqual(await q.state(a),{current_price:1000,status:'ACTIVE',bid_count:0,result_count:0});
++});
++
++check('QA-18: first bid at starting price is accepted and price/history update together', async () => {
++  const a=await q.auction();
++  await q.commitment(a);
++  const reply=await q.bid(a);
++  assert.equal(reply.status,201);
++  assert.equal(reply.json.data.currentPrice,1000);
++  const history=await q.api('/auctions/'+a.id+'/bids',{token:q.bidder.token});
++  assert.equal(history.json.data.length,1);
++  assert.equal(history.json.data[0].id,reply.json.data.bidId);
++  assert.equal(Number(history.json.data[0].amount),1000);
++  assert.equal((await q.state(a)).current_price,1000);
++});
++
++check('QA-08: first bid below starting price is rejected without changing price', async () => {
++  const a=await q.auction();
++  await q.commitment(a);
++  expectError(await q.bid(a,999.99),409,'BID_TOO_LOW');
++  assert.equal((await q.state(a)).current_price,1000);
++  assert.equal((await q.state(a)).bid_count,0);
++});
++
++check('QA-19: later bid enforces increment; exact increment is accepted', async () => {
++  const a=await q.auction();
++  await q.commitment(a);
++  assert.equal((await q.bid(a,1000)).status,201);
++  expectError(await q.bid(a,1049.99),409,'BID_TOO_LOW');
++  assert.equal((await q.state(a)).current_price,1000);
++  assert.equal((await q.bid(a,1050)).status,201);
++  assert.equal((await q.state(a)).bid_count,2);
++});
++
++check('BID-03: decimal increments retain exact cents without floating point drift', async () => {
++  const a=await q.auction({price:1000.01,increment:0.01});
++  await q.commitment(a);
++  assert.equal((await q.bid(a,1000.01)).status,201);
++  assert.equal((await q.bid(a,1000.02)).status,201);
++  expectError(await q.bid(a,1000.02),409,'BID_TOO_LOW');
++  assert.equal((await q.pool.query('SELECT current_price::text AS price FROM auctions WHERE id=$1',[a.id])).rows[0].price,'1000.02');
++});
++
++check('QA-11: scheduled, expired and CLOSED auctions reject bids using server state/time', async () => {
++  for(const options of [{start:'1 hour',end:'2 hours',status:'SCHEDULED'},{end:'-1 second'},{status:'CLOSED'}]) {
++    const a=await q.auction(options);
++    await q.commitment(a);
++    expectError(await q.bid(a),409,'AUCTION_NOT_ACTIVE');
++    assert.equal((await q.state(a)).bid_count,0);
++  }
++});
++
++check('QA-09: a retried request UUID accepts at most one bid', async () => {
++  const a=await q.auction();
++  await q.commitment(a);
++  const request=randomUUID();
++  assert.equal((await q.bid(a,1000,q.bidder,request)).status,201);
++  expectError(await q.bid(a,1050,q.bidder,request),409,'DUPLICATE_REQUEST');
++  assert.equal((await q.state(a)).bid_count,1);
++  assert.equal((await q.state(a)).current_price,1000);
++});
++
++check('QA-09 concurrent replay: two waiting requests with the same UUID produce one accepted bid', async () => {
++  const a=await q.auction();
++  await q.commitment(a);
++  const lock=await q.lock(a), request=randomUUID();
++  try {
++    const one=q.bid(a,1000,q.bidder,request),two=q.bid(a,1000,q.bidder,request);
++    await q.awaitBlocked(2);
++    await lock.query('COMMIT');
++    const responses=await Promise.all([one,two]);
++    assert.deepEqual(responses.map(r=>r.status).sort(),[201,409]);
++    assert.equal(responses.find(r=>r.status===409).json.error.code,'DUPLICATE_REQUEST');
++    assert.equal((await q.state(a)).bid_count,1);
++  } finally { await lock.query('ROLLBACK'); lock.release(); }
++});
++
++check('QA-10: two simultaneous same-price bids serialize; loser sees the updated price', async () => {
++  const a=await q.auction();
++  await q.commitment(a,q.bidder); await q.commitment(a,q.bidder2);
++  const lock=await q.lock(a);
++  try {
++    const one=q.bid(a,1000,q.bidder),two=q.bid(a,1000,q.bidder2);
++    await q.awaitBlocked(2);
++    await lock.query('COMMIT');
++    const responses=await Promise.all([one,two]);
++    assert.deepEqual(responses.map(r=>r.status).sort(),[201,409]);
++    assert.equal(responses.find(r=>r.status===409).json.error.code,'BID_TOO_LOW');
++    assert.equal((await q.state(a)).bid_count,1);
++    const loser=responses[0].status===409?q.bidder:q.bidder2;
++    assert.equal((await q.bid(a,1050,loser)).status,201);
++    assert.equal((await q.state(a)).current_price,1050);
++  } finally { await lock.query('ROLLBACK'); lock.release(); }
++});
++
++check('BID-04: reused request UUID across auctions rolls back the losing auction price', async () => {
++  const a=await q.auction(),b=await q.auction();
++  await q.commitment(a); await q.commitment(b);
++  const request=randomUUID();
++  const responses=await Promise.all([q.bid(a,1100,q.bidder,request),q.bid(b,1100,q.bidder,request)]);
++  assert.deepEqual(responses.map(r=>r.status).sort(),[201,409]);
++  const loser=responses[0].status===409?a:b;
++  assert.equal((await q.state(loser)).current_price,1000);
++  assert.equal((await q.state(loser)).bid_count,0);
++});
++
++check('BID-05: database failure after bid insertion rolls back bid and price atomically', async () => {
++  const a=await q.auction(); await q.commitment(a);
++  // Fault injection is confined to this disposable schema, never production migrations.
++  await q.pool.query(`CREATE FUNCTION qa_fail_price_update() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
++    IF NEW.id='${a.id}'::uuid THEN RAISE EXCEPTION 'QA injected update failure'; END IF; RETURN NEW; END $$;
++    CREATE TRIGGER qa_fail_price BEFORE UPDATE ON auctions FOR EACH ROW EXECUTE FUNCTION qa_fail_price_update()`);
++  try {
++    expectError(await q.bid(a,1100),500,'INTERNAL_ERROR');
++    assert.equal((await q.state(a)).bid_count,0);
++    assert.equal((await q.state(a)).current_price,1000);
++  } finally {
++    await q.pool.query('DROP TRIGGER qa_fail_price ON auctions; DROP FUNCTION qa_fail_price_update()');
++  }
++  assert.equal((await q.bid(a,1100)).status,201);
++});
++
++check('BID-06 / QA-11: bid waiting on a row lock revalidates the deadline after the lock', async () => {
++  const a=await q.auction(); await q.commitment(a);
++  const lock=await q.lock(a);
++  try {
++    const response=q.bid(a);
++    await q.awaitBlocked();
++    await lock.query(`UPDATE "${q.schema}".auctions SET end_time=clock_timestamp()-interval '1 millisecond' WHERE id=$1`,[a.id]);
++    await lock.query('COMMIT');
++    expectError(await response,409,'AUCTION_NOT_ACTIVE');
++    assert.equal((await q.state(a)).bid_count,0);
++  } finally { await lock.query('ROLLBACK'); lock.release(); }
++});
++
++check('BID-07: private grant plus synthetic commitment permits a bid; history stays auction-specific', async () => {
++  const a=await q.auction({visibility:'PRIVATE'}),other=await q.auction();
++  await q.grant(a); await q.commitment(a); await q.commitment(other);
++  const accepted=await q.bid(a);
++  assert.equal(accepted.status,201);
++  await q.bid(other,1100);
++  const history=await q.api('/auctions/'+a.id+'/bids',{token:q.bidder.token});
++  assert.equal(history.json.data.length,1);
++  assert.equal(history.json.data[0].id,accepted.json.data.bidId);
++  assert.equal('bidder_id' in history.json.data[0],false);
++});
++
++check('QA-12: ended auction without bids closes with a null winner', async () => {
++  const a=await q.auction({end:'-1 second'});
++  const response=await q.api('/auctions/'+a.id);
++  assert.equal(response.status,200);
++  assert.equal(response.json.data.status,'CLOSED');
++  assert.equal(response.json.data.result.winner_bid_id,null);
++  assert.equal((await q.state(a)).result_count,1);
++});
++
++check('CLOSE-01: highest accepted bid determines winner and belongs to that auction', async () => {
++  const a=await q.auction(); await q.commitment(a);
++  await q.bid(a,1000);
++  const winner=await q.bid(a,1200);
++  await q.pool.query("UPDATE auctions SET end_time=clock_timestamp()-interval '1 millisecond' WHERE id=$1",[a.id]);
++  const response=await q.api('/auctions/'+a.id);
++  assert.equal(response.json.data.result.winner_bid_id,winner.json.data.bidId);
++  const persisted=(await q.pool.query('SELECT b.auction_id,b.amount FROM auction_results r JOIN bids b ON b.id=r.winner_bid_id WHERE r.auction_id=$1',[a.id])).rows[0];
++  assert.equal(persisted.auction_id,a.id);
++  assert.equal(Number(persisted.amount),1200);
++});
++
++check('QA-13: repeated and concurrent detail requests preserve one stable closure result', async () => {
++  const a=await q.auction({end:'-1 second'});
++  const results=await Promise.all(Array.from({length:6},()=>q.api('/auctions/'+a.id)));
++  assert.ok(results.every(r=>r.status===200));
++  for(const result of results) assert.deepEqual(result.json.data.result,results[0].json.data.result);
++  const repeat=await q.api('/auctions/'+a.id);
++  assert.deepEqual(repeat.json.data.result,results[0].json.data.result);
++  assert.equal((await q.state(a)).result_count,1);
++});
++
++check('QA-23: no page visit is needed to reject late bids; next detail access finalizes result', async () => {
++  const a=await q.auction({end:'-1 second'}); await q.commitment(a);
++  expectError(await q.bid(a),409,'AUCTION_NOT_ACTIVE');
++  assert.equal((await q.state(a)).result_count,0);
++  const response=await q.api('/auctions/'+a.id);
++  assert.equal(response.json.data.status,'CLOSED');
++  assert.equal((await q.state(a)).result_count,1);
++});
++
++check('CLOSE-02: active auction detail request does not close it prematurely', async () => {
++  const a=await q.auction();
++  const response=await q.api('/auctions/'+a.id);
++  assert.equal(response.status,200);
++  assert.equal(response.json.data.result,null);
++  assert.equal((await q.state(a)).result_count,0);
++});
++
++check('CLOSE-03: failure while storing result rolls back CLOSED status; later access can retry', async () => {
++  const a=await q.auction({end:'-1 second'});
++  await q.pool.query(`CREATE FUNCTION qa_fail_result() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
++    IF NEW.auction_id='${a.id}'::uuid THEN RAISE EXCEPTION 'QA injected closure failure'; END IF; RETURN NEW; END $$;
++    CREATE TRIGGER qa_fail_result BEFORE INSERT ON auction_results FOR EACH ROW EXECUTE FUNCTION qa_fail_result()`);
++  try {
++    expectError(await q.api('/auctions/'+a.id),500,'INTERNAL_ERROR');
++    assert.equal((await q.state(a)).status,'ACTIVE');
++    assert.equal((await q.state(a)).result_count,0);
++  } finally { await q.pool.query('DROP TRIGGER qa_fail_result ON auction_results; DROP FUNCTION qa_fail_result()'); }
++  assert.equal((await q.api('/auctions/'+a.id)).json.data.status,'CLOSED');
++});
++
++check('CLOSE-04: queued bid and closure after deadline cannot create a late winner', async () => {
++  const a=await q.auction(); await q.commitment(a);
++  const lock=await q.lock(a);
++  try {
++    const bid=q.bid(a);
++    await q.awaitBlocked();
++    await lock.query(`UPDATE "${q.schema}".auctions SET end_time=clock_timestamp()-interval '1 millisecond' WHERE id=$1`,[a.id]);
++    const closure=q.api('/auctions/'+a.id);
++    await q.awaitBlocked(2);
++    await lock.query('COMMIT');
++    const [bidResult,closed]=await Promise.all([bid,closure]);
++    expectError(bidResult,409,'AUCTION_NOT_ACTIVE');
++    assert.equal(closed.json.data.status,'CLOSED');
++    assert.equal(closed.json.data.result.winner_bid_id,null);
++    assert.deepEqual(await q.state(a),{current_price:1000,status:'CLOSED',bid_count:0,result_count:1});
++  } finally { await lock.query('ROLLBACK'); lock.release(); }
++});
++
++check('CLOSE-05: bid validated before deadline commits before waiting closure and becomes the winner', async () => {
++  const a=await q.auction({end:'2 seconds'}); await q.commitment(a);
++  const gate=await q.control.connect();
++  const gateId=714301; // test-only advisory lock; production still uses its normal auction-row lock
++  await gate.query('SELECT pg_advisory_lock($1)',[gateId]);
++  await q.pool.query(`CREATE FUNCTION qa_pause_update() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
++    IF NEW.id='${a.id}'::uuid THEN PERFORM pg_advisory_xact_lock(${gateId}); END IF; RETURN NEW; END $$;
++    CREATE TRIGGER qa_pause_update BEFORE UPDATE ON auctions FOR EACH ROW EXECUTE FUNCTION qa_pause_update()`);
++  try {
++    const bid=q.bid(a,1100);
++    const waitUntil=async predicate=>{
++      const deadline=Date.now()+5000;
++      while(Date.now()<deadline) { if(await predicate()) return; await new Promise(resolve=>setTimeout(resolve,20)); }
++      assert.fail('Controlled transaction did not reach expected synchronization point');
++    };
++    await waitUntil(async()=>!!(await q.control.query("SELECT 1 FROM pg_stat_activity WHERE application_name=$1 AND wait_event='advisory'",[q.schema])).rowCount);
++    await waitUntil(async()=>(await q.control.query(`SELECT clock_timestamp()>=end_time AS ended FROM "${q.schema}".auctions WHERE id=$1`,[a.id])).rows[0].ended);
++    const closure=q.api('/auctions/'+a.id);
++    await q.awaitBlocked();
++    await gate.query('SELECT pg_advisory_unlock($1)',[gateId]);
++    const [accepted,closed]=await Promise.all([bid,closure]);
++    assert.equal(accepted.status,201);
++    assert.equal(closed.status,200);
++    assert.equal(closed.json.data.result.winner_bid_id,accepted.json.data.bidId);
++    assert.deepEqual(await q.state(a),{current_price:1100,status:'CLOSED',bid_count:1,result_count:1});
++  } finally {
++    await gate.query('SELECT pg_advisory_unlock($1)',[gateId]); gate.release();
++    await q.pool.query('DROP TRIGGER qa_pause_update ON auctions; DROP FUNCTION qa_pause_update()');
++  }
++});
+diff --git a/backend/tests/database.test.js b/backend/tests/database.test.js
+new file mode 100644
+index 0000000..91ef74a
+--- /dev/null
++++ b/backend/tests/database.test.js
+@@ -0,0 +1,124 @@
++import test, { before, after } from 'node:test';
++import assert from 'node:assert/strict';
++import { randomUUID } from 'node:crypto';
++import { setupQa, databaseSkip, expectSqlCode } from './helpers/qa-fixtures.js';
++
++let q;
++before(async () => { if (!databaseSkip) q = await setupQa('database'); });
++after(async () => { if (q) await q.shutdown(); });
++const check = (name, fn) => test(name, { skip: databaseSkip }, fn);
++
++check('DB-01: migration creates exactly the ten Stage 3 core tables, each with a primary key', async () => {
++  const result = await q.pool.query(`SELECT t.table_name, count(c.constraint_name)::int AS primary_keys
++    FROM information_schema.tables t LEFT JOIN information_schema.table_constraints c
++    ON c.table_schema=t.table_schema AND c.table_name=t.table_name AND c.constraint_type='PRIMARY KEY'
++    WHERE t.table_schema=$1 AND t.table_type='BASE TABLE' GROUP BY t.table_name ORDER BY t.table_name`, [q.schema]);
++  assert.deepEqual(result.rows.map(r => r.table_name), ['auction_results','auctions','bid_commitments','bids','categories','item_images','items','private_auction_access','user_sessions','users']);
++  assert.ok(result.rows.every(row => row.primary_keys === 1));
++});
++
++check('DB-02: account, category and session identifiers are unique; account roles are constrained', async () => {
++  const email = (await q.pool.query('SELECT email FROM users WHERE id=$1', [q.seller.id])).rows[0].email;
++  await assert.rejects(q.pool.query("INSERT INTO users(name,email,password_hash) VALUES('Duplicate',$1,'fixture')", [email]), expectSqlCode('23505'));
++  await assert.rejects(q.pool.query("UPDATE users SET role='SELLER' WHERE id=$1", [q.seller.id]), expectSqlCode('23514'));
++  await assert.rejects(q.pool.query("INSERT INTO categories(name) VALUES('QA synthetic category')"), expectSqlCode('23505'));
++  await assert.rejects(q.pool.query('INSERT INTO user_sessions(user_id,token_hash,expires_at) SELECT user_id,token_hash,expires_at FROM user_sessions LIMIT 1'), expectSqlCode('23505'));
++});
++
++check('DB-03: foreign keys reject orphan listings, images, sessions, bids and grants', async () => {
++  const a = await q.auction();
++  const orphan = randomUUID();
++  const statements = [
++    ["INSERT INTO items(seller_id,category_id,title,description) VALUES($1,$2,'Orphan','Fixture')", [orphan,q.category.id]],
++    ["INSERT INTO items(seller_id,category_id,title,description) VALUES($1,$2,'Orphan','Fixture')", [q.seller.id,orphan]],
++    ["INSERT INTO item_images(item_id,image_url) VALUES($1,'/qa/not-real.jpg')", [orphan]],
++    ["INSERT INTO user_sessions(user_id,token_hash,expires_at) VALUES($1,'orphan',now())", [orphan]],
++    ['INSERT INTO bids(auction_id,bidder_id,amount,request_id) VALUES($1,$2,1000,$3)', [orphan,q.bidder.id,randomUUID()]],
++    ['INSERT INTO private_auction_access(auction_id,user_id) VALUES($1,$2)', [a.id,orphan]],
++  ];
++  for (const [sql, params] of statements) await assert.rejects(q.pool.query(sql, params), expectSqlCode('23503'));
++});
++
++check('DB-04: all listing, auction, visibility and commitment status enums reject invalid values', async () => {
++  const a = await q.auction();
++  const c = await q.commitment(a);
++  for (const [sql, params] of [
++    ["UPDATE items SET status='SOLD' WHERE id=$1", [a.item_id]],
++    ["UPDATE auctions SET status='PAUSED' WHERE id=$1", [a.id]],
++    ["UPDATE auctions SET visibility='VIP' WHERE id=$1", [a.id]],
++    ["UPDATE bid_commitments SET status='APPROVED' WHERE id=$1", [c.id]],
++  ]) await assert.rejects(q.pool.query(sql, params), expectSqlCode('23514'));
++});
++
++check('DB-05: prices/increments are positive and auction end must follow start', async () => {
++  const a = await q.auction();
++  for (const sql of [
++    'UPDATE auctions SET starting_price=0 WHERE id=$1',
++    'UPDATE auctions SET current_price=-1 WHERE id=$1',
++    'UPDATE auctions SET minimum_increment=0 WHERE id=$1',
++    'UPDATE auctions SET end_time=start_time WHERE id=$1',
++  ]) await assert.rejects(q.pool.query(sql, [a.id]), expectSqlCode('23514'));
++  await assert.rejects(q.pool.query('INSERT INTO bids(auction_id,bidder_id,amount,request_id) VALUES($1,$2,0,$3)', [a.id,q.bidder.id,randomUUID()]), expectSqlCode('23514'));
++});
++
++check('DB-06: one auction per listing; private codes require hashes and public codes must be null', async () => {
++  const a = await q.auction();
++  await assert.rejects(q.pool.query(`INSERT INTO auctions(item_id,visibility,starting_price,current_price,minimum_increment,start_time,end_time)
++    SELECT item_id,visibility,starting_price,current_price,minimum_increment,start_time,end_time FROM auctions WHERE id=$1`, [a.id]), expectSqlCode('23505'));
++  await assert.rejects(q.pool.query("UPDATE auctions SET access_code_hash='raw-fixture' WHERE id=$1", [a.id]), expectSqlCode('23514'));
++  await assert.rejects(q.pool.query("UPDATE auctions SET visibility='PRIVATE' WHERE id=$1", [a.id]), expectSqlCode('23514'));
++  const privateAuction = await q.auction({ visibility: 'PRIVATE' });
++  assert.notEqual(privateAuction.access_code_hash, privateAuction.accessCode);
++});
++
++check('DB-07: a user can have only one private grant and one commitment per auction', async () => {
++  const a = await q.auction({ visibility: 'PRIVATE' });
++  await q.grant(a);
++  await assert.rejects(q.pool.query('INSERT INTO private_auction_access(auction_id,user_id) VALUES($1,$2)', [a.id,q.bidder.id]), expectSqlCode('23505'));
++  await q.commitment(a);
++  await assert.rejects(q.pool.query("INSERT INTO bid_commitments(auction_id,user_id,status) VALUES($1,$2,'PENDING')", [a.id,q.bidder.id]), expectSqlCode('23505'));
++});
++
++check('DB-08 / QA-09: request UUID is globally unique and money uses numeric(14,2)', async () => {
++  const a = await q.auction({ price: 1000.01, increment: 0.01 });
++  const request = randomUUID();
++  await q.pool.query('INSERT INTO bids(auction_id,bidder_id,amount,request_id) VALUES($1,$2,1000.01,$3)', [a.id,q.bidder.id,request]);
++  await assert.rejects(q.pool.query('INSERT INTO bids(auction_id,bidder_id,amount,request_id) VALUES($1,$2,1001,$3)', [a.id,q.bidder2.id,request]), expectSqlCode('23505'));
++  const fields = (await q.pool.query(`SELECT numeric_precision,numeric_scale FROM information_schema.columns
++    WHERE table_schema=$1 AND data_type='numeric'`, [q.schema])).rows;
++  assert.equal(fields.length, 4);
++  assert.ok(fields.every(field => field.numeric_precision === 14 && field.numeric_scale === 2));
++});
++
++check('DB-09 / QA-20: composite foreign key prevents a winner from another auction', async () => {
++  const a = await q.auction(), b = await q.auction();
++  const bid = (await q.pool.query('INSERT INTO bids(auction_id,bidder_id,amount,request_id) VALUES($1,$2,1000,$3) RETURNING id', [a.id,q.bidder.id,randomUUID()])).rows[0];
++  await assert.rejects(q.pool.query('INSERT INTO auction_results(auction_id,winner_bid_id) VALUES($1,$2)', [b.id,bid.id]), expectSqlCode('23503'));
++  await q.pool.query('INSERT INTO auction_results(auction_id,winner_bid_id) VALUES($1,$2)', [a.id,bid.id]);
++  assert.equal((await q.state(b)).result_count, 0);
++});
++
++check('DB-10 / QA-12/13: nullable winner supports no bids; result is unique per auction', async () => {
++  const a = await q.auction();
++  await q.pool.query('INSERT INTO auction_results(auction_id,winner_bid_id) VALUES($1,NULL)', [a.id]);
++  await assert.rejects(q.pool.query('INSERT INTO auction_results(auction_id) VALUES($1)', [a.id]), expectSqlCode('23505'));
++  assert.equal((await q.pool.query('SELECT winner_bid_id FROM auction_results WHERE auction_id=$1', [a.id])).rows[0].winner_bid_id, null);
++});
++
++check('DB-11: deleting an unauctioned item cascades its image references; deleting a free account cascades sessions', async () => {
++  const listing = await q.item();
++  await q.pool.query("INSERT INTO item_images(item_id,image_url) VALUES($1,'/qa/fixture.jpg')", [listing.id]);
++  await q.pool.query('DELETE FROM items WHERE id=$1', [listing.id]);
++  assert.equal((await q.pool.query('SELECT count(*)::int AS n FROM item_images WHERE item_id=$1', [listing.id])).rows[0].n, 0);
++  const user = await q.account();
++  await q.pool.query('DELETE FROM users WHERE id=$1', [user.id]);
++  assert.equal((await q.pool.query('SELECT count(*)::int AS n FROM user_sessions WHERE user_id=$1', [user.id])).rows[0].n, 0);
++});
++
++check('DB-12: timestamps are timezone-aware and the four defined lookup indexes exist', async () => {
++  const timestamps = (await q.pool.query("SELECT data_type FROM information_schema.columns WHERE table_schema=$1 AND column_name IN ('created_at','expires_at','start_time','end_time','closed_at','granted_at','reviewed_at')", [q.schema])).rows;
++  assert.equal(timestamps.length, 9);
++  assert.ok(timestamps.every(field => field.data_type === 'timestamp with time zone'));
++  const indexes = (await q.pool.query("SELECT indexname FROM pg_indexes WHERE schemaname=$1 AND indexname LIKE 'idx_%'", [q.schema])).rows.map(row => row.indexname).sort();
++  assert.deepEqual(indexes, ['idx_auctions_status_end','idx_bids_auction_time','idx_commitments_user','idx_items_seller']);
++});
+diff --git a/backend/tests/helpers/qa-fixtures.js b/backend/tests/helpers/qa-fixtures.js
+new file mode 100644
+index 0000000..33408f9
+--- /dev/null
++++ b/backend/tests/helpers/qa-fixtures.js
+@@ -0,0 +1,123 @@
++import assert from 'node:assert/strict';
++import { randomUUID, randomBytes, createHash } from 'node:crypto';
++import { readFile } from 'node:fs/promises';
++import pg from 'pg';
++import bcrypt from 'bcryptjs';
++
++export const databaseUrl = process.env.TEST_DATABASE_URL;
++export const databaseSkip = !databaseUrl && 'Requires a disposable TEST_DATABASE_URL ending in _test';
++
++export function testDatabase(value) {
++  assert.ok(value, 'Set TEST_DATABASE_URL explicitly; there is no production fallback');
++  const url = new URL(value);
++  assert.ok(['postgres:', 'postgresql:'].includes(url.protocol));
++  assert.match(decodeURIComponent(url.pathname), /_test$/, 'Only a disposable database ending in _test is allowed');
++  return url;
++}
++
++// A schema per test process isolates these fixtures from the existing account tests.
++// SUCCESS rows below are deliberately synthetic. They do not prove banking access.
++export async function setupQa(label) {
++  const baseUrl = testDatabase(databaseUrl);
++  const schema = 'qa_' + label + '_' + randomBytes(6).toString('hex');
++  const control = new pg.Pool({ connectionString: baseUrl.toString() });
++  await control.query('CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public');
++  await control.query(`CREATE SCHEMA "${schema}"`);
++  const url = new URL(baseUrl);
++  url.searchParams.set('options', `-c search_path=${schema},public`);
++  url.searchParams.set('application_name', schema);
++  process.env.DATABASE_URL = url.toString();
++  const { pool } = await import('../../src/db.js');
++  const { app } = await import('../../src/app.js');
++  await pool.query(await readFile(new URL('../../../database/migrations/001_schema.sql', import.meta.url), 'utf8'));
++  const category = (await pool.query("INSERT INTO categories(name) VALUES('QA synthetic category') RETURNING id")).rows[0];
++  const server = app.listen(0, '127.0.0.1');
++  await new Promise((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
++  const base = `http://127.0.0.1:${server.address().port}/api/v1`;
++  const passwordHash = await bcrypt.hash('Local-QA-fixture-only', 4);
++  const privateHash = await bcrypt.hash('local-private-fixture-code', 4);
++
++  async function account(role = 'USER') {
++    const user = (await pool.query('INSERT INTO users(name,email,password_hash,role) VALUES($1,$2,$3,$4) RETURNING id,role',
++      ['Synthetic QA user', randomUUID() + '@example.invalid', passwordHash, role])).rows[0];
++    const token = randomBytes(32).toString('hex');
++    await pool.query("INSERT INTO user_sessions(user_id,token_hash,expires_at) VALUES($1,$2,clock_timestamp()+interval '1 hour')",
++      [user.id, createHash('sha256').update(token).digest('hex')]);
++    return { ...user, token };
++  }
++  const seller = await account(), bidder = await account(), bidder2 = await account(), admin = await account('ADMIN');
++
++  async function api(path, { method = 'GET', body, token, form } = {}) {
++    const response = await fetch(base + path, {
++      method,
++      headers: { ...(form ? {} : { 'Content-Type': 'application/json' }), ...(token ? { Authorization: 'Bearer ' + token } : {}) },
++      ...(form ? { body: form } : body !== undefined ? { body: JSON.stringify(body) } : {}),
++      signal: AbortSignal.timeout(15000),
++    });
++    return { status: response.status, json: await response.json() };
++  }
++
++  async function item({ owner = seller, status = 'APPROVED', title = 'Synthetic QA listing', fields = {} } = {}) {
++    return (await pool.query('INSERT INTO items(seller_id,category_id,title,description,category_fields,status) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
++      [owner.id, category.id, title, 'Synthetic test data; not a real customer listing.', JSON.stringify(fields), status])).rows[0];
++  }
++
++  async function auction({ owner = seller, visibility = 'PUBLIC', start = '-1 hour', end = '1 hour', status = 'ACTIVE', price = 1000, increment = 50 } = {}) {
++    const listing = await item({ owner });
++    const result = (await pool.query(`INSERT INTO auctions(item_id,visibility,access_code_hash,starting_price,current_price,minimum_increment,start_time,end_time,status)
++      VALUES($1,$2,$3,$4,$4,$5,clock_timestamp()+$6::interval,clock_timestamp()+$7::interval,$8) RETURNING *`,
++    [listing.id, visibility, visibility === 'PRIVATE' ? privateHash : null, price, increment, start, end, status])).rows[0];
++    return { ...result, listing, owner, accessCode: visibility === 'PRIVATE' ? 'local-private-fixture-code' : null };
++  }
++
++  async function commitment(a, user = bidder, status = 'SUCCESS') {
++    return (await pool.query(`INSERT INTO bid_commitments(auction_id,user_id,status,sandbox_reference) VALUES($1,$2,$3,'LOCAL_QA_FIXTURE_NOT_BANK_VERIFIED')
++      ON CONFLICT(auction_id,user_id) DO UPDATE SET status=EXCLUDED.status RETURNING *`, [a.id, user.id, status])).rows[0];
++  }
++  async function grant(a, user = bidder) {
++    await pool.query('INSERT INTO private_auction_access(auction_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING', [a.id, user.id]);
++  }
++  async function bid(a, amount = 1000, user = bidder, requestId = randomUUID()) {
++    return api(`/auctions/${a.id}/bids`, { method: 'POST', token: user.token, body: { amount, requestId } });
++  }
++  async function state(a) {
++    const value = (await pool.query(`SELECT a.current_price,a.status,
++      (SELECT count(*)::int FROM bids WHERE auction_id=a.id) AS bid_count,
++      (SELECT count(*)::int FROM auction_results WHERE auction_id=a.id) AS result_count
++      FROM auctions a WHERE id=$1`, [a.id])).rows[0];
++    return { ...value, current_price: Number(value.current_price) };
++  }
++  async function awaitBlocked(minimum = 1) {
++    const deadline = Date.now() + 5000;
++    while (Date.now() < deadline) {
++      const count = (await control.query("SELECT count(*)::int AS n FROM pg_stat_activity WHERE application_name=$1 AND wait_event_type='Lock' AND query LIKE '%FOR UPDATE%'", [schema])).rows[0].n;
++      if (count >= minimum) return;
++      await new Promise(resolve => setTimeout(resolve, 20));
++    }
++    assert.fail(`Expected ${minimum} application transactions waiting for the controlled auction lock`);
++  }
++  async function lock(a) {
++    const client = await control.connect();
++    await client.query('BEGIN');
++    await client.query(`SELECT id FROM "${schema}".auctions WHERE id=$1 FOR UPDATE`, [a.id]);
++    return client;
++  }
++  async function shutdown() {
++    server.closeIdleConnections();
++    await new Promise(resolve => server.close(resolve));
++    await pool.end();
++    await control.query(`DROP SCHEMA "${schema}" CASCADE`);
++    await control.end();
++  }
++  return { schema, control, pool, category, seller, bidder, bidder2, admin, account, api, item, auction, commitment, grant, bid, state, lock, awaitBlocked, shutdown };
++}
++
++export function expectError(response, status, code) {
++  assert.equal(response.status, status, JSON.stringify(response.json));
++  assert.equal(response.json.error.code, code);
++  assert.equal('data' in response.json, false);
++}
++
++export function expectSqlCode(code) {
++  return error => { assert.equal(error.code, code); return true; };
++}
+diff --git a/backend/tests/marketplace.test.js b/backend/tests/marketplace.test.js
+new file mode 100644
+index 0000000..ae0f15e
+--- /dev/null
++++ b/backend/tests/marketplace.test.js
+@@ -0,0 +1,175 @@
++import test, { before, after } from 'node:test';
++import assert from 'node:assert/strict';
++import { randomUUID } from 'node:crypto';
++import bcrypt from 'bcryptjs';
++import { setupQa, databaseSkip, expectError } from './helpers/qa-fixtures.js';
++
++let q;
++before(async () => { if (!databaseSkip) q = await setupQa('marketplace'); });
++after(async () => { if (q) await q.shutdown(); });
++const check = (name, fn) => test(name, { skip: databaseSkip }, fn);
++const auctionBody = itemId => ({ itemId, visibility: 'PUBLIC', startingPrice: 1000, minimumIncrement: 50,
++  startTime: new Date(Date.now()-60000).toISOString(), endTime: new Date(Date.now()+3600000).toISOString() });
++
++check('LIST-01: authenticated owner creates a JSON listing in PENDING_REVIEW with category fields', async () => {
++  const response = await q.api('/items', { method: 'POST', token: q.seller.token,
++    body: { categoryId: q.category.id, title: '  Synthetic listing  ', description: ' Fixture description ', categoryFields: { fixture: true } } });
++  assert.equal(response.status, 201);
++  assert.equal(response.json.data.seller_id, q.seller.id);
++  assert.equal(response.json.data.status, 'PENDING_REVIEW');
++  assert.equal(response.json.data.title, 'Synthetic listing');
++  assert.deepEqual(response.json.data.category_fields, { fixture: true });
++});
++
++check('LIST-02: missing auth and invalid listing fields do not create listings', async () => {
++  expectError(await q.api('/items', { method: 'POST', body: {} }), 401, 'UNAUTHORIZED');
++  for (const body of [ {}, { categoryId:q.category.id,title:' ',description:'x' },
++    { categoryId:q.category.id,title:'x',description:'x',categoryFields:[] } ]) {
++    expectError(await q.api('/items', { method:'POST',token:q.seller.token,body }),400,'INVALID_INPUT');
++  }
++  expectError(await q.api('/items', { method:'POST',token:q.seller.token,
++    body:{categoryId:randomUUID(),title:'x',description:'x'} }),400,'INVALID_CATEGORY');
++});
++
++check('LIST-03: only owner or ADMIN can read an individual listing; lists are owner-scoped', async () => {
++  const listing = await q.item({ status: 'PENDING_REVIEW' });
++  expectError(await q.api('/items/'+listing.id, { token:q.bidder.token }),403,'FORBIDDEN');
++  assert.equal((await q.api('/items/'+listing.id, { token:q.admin.token })).status,200);
++  const own = await q.api('/items', { token:q.seller.token });
++  assert.ok(own.json.data.every(item => item.seller_id===q.seller.id));
++  const pending = await q.api('/items?status=PENDING_REVIEW', { token:q.admin.token });
++  assert.ok(pending.json.data.some(item=>item.id===listing.id));
++  assert.ok(pending.json.data.every(item=>item.status==='PENDING_REVIEW'));
++});
++
++check('QA-03: USER cannot review; ADMIN approval records reviewer and review time', async () => {
++  const listing = await q.item({ status: 'PENDING_REVIEW' });
++  const path = '/admin/items/'+listing.id+'/review';
++  expectError(await q.api(path,{method:'POST',token:q.seller.token,body:{decision:'APPROVED'}}),403,'FORBIDDEN');
++  const response = await q.api(path,{method:'POST',token:q.admin.token,body:{decision:'APPROVED'}});
++  assert.equal(response.status,200);
++  assert.equal(response.json.data.status,'APPROVED');
++  assert.equal(response.json.data.reviewed_by,q.admin.id);
++  assert.ok(response.json.data.reviewed_at);
++  expectError(await q.api(path,{method:'POST',token:q.admin.token,body:{decision:'APPROVED'}}),409,'INVALID_STATE');
++});
++
++check('QA-17: rejection includes reason; owner resubmission clears the prior review', async () => {
++  const listing=await q.item({status:'PENDING_REVIEW'});
++  expectError(await q.api('/admin/items/'+listing.id+'/review',{method:'POST',token:q.admin.token,body:{decision:'REJECTED'}}),400,'INVALID_INPUT');
++  const rejection=await q.api('/admin/items/'+listing.id+'/review',{method:'POST',token:q.admin.token,body:{decision:'REJECTED',reason:'Add a clear description.'}});
++  assert.equal(rejection.json.data.review_reason,'Add a clear description.');
++  const edit=await q.api('/items/'+listing.id,{method:'PATCH',token:q.seller.token,body:{title:'Corrected fixture',description:'Corrected description'}});
++  assert.equal(edit.status,200);
++  assert.equal(edit.json.data.status,'PENDING_REVIEW');
++  assert.equal(edit.json.data.review_reason,null);
++  assert.equal(edit.json.data.reviewed_by,null);
++  assert.equal(edit.json.data.reviewed_at,null);
++});
++
++check('LIST-04: another user cannot resubmit a rejected listing; approved auction listing is locked', async () => {
++  const rejected=await q.item({status:'REJECTED'});
++  const body={title:'Forbidden change',description:'Forbidden change'};
++  const response=await q.api('/items/'+rejected.id,{method:'PATCH',token:q.bidder.token,body});
++  assert.ok([403,409].includes(response.status));
++  assert.equal((await q.pool.query('SELECT title FROM items WHERE id=$1',[rejected.id])).rows[0].title,rejected.title);
++  const a=await q.auction();
++  expectError(await q.api('/items/'+a.item_id,{method:'PATCH',token:q.seller.token,body}),409,'INVALID_STATE');
++});
++
++check('QA-04: pending/rejected listings and another owner\'s approved listing cannot be auctioned', async () => {
++  for(const status of ['PENDING_REVIEW','REJECTED']) {
++    const listing=await q.item({status});
++    expectError(await q.api('/auctions',{method:'POST',token:q.seller.token,body:auctionBody(listing.id)}),403,'NOT_APPROVED');
++  }
++  const other=await q.item();
++  expectError(await q.api('/auctions',{method:'POST',token:q.bidder.token,body:auctionBody(other.id)}),403,'NOT_APPROVED');
++});
++
++check('AUCT-01: auction starts at starting price; invalid money/schedule and duplicate item are rejected', async () => {
++  const listing=await q.item();
++  const body=auctionBody(listing.id);
++  for(const change of [{startingPrice:0},{startingPrice:1000.001},{minimumIncrement:-1},{endTime:body.startTime}])
++    expectError(await q.api('/auctions',{method:'POST',token:q.seller.token,body:{...body,...change}}),400,'INVALID_INPUT');
++  const response=await q.api('/auctions',{method:'POST',token:q.seller.token,body});
++  assert.equal(response.status,201);
++  assert.equal(Number(response.json.data.current_price),1000);
++  assert.equal(response.json.data.status,'SCHEDULED');
++  expectError(await q.api('/auctions',{method:'POST',token:q.seller.token,body}),409,'DUPLICATE_AUCTION');
++});
++
++check('PRIVATE-01: private creation returns code only to owner, stores a hash and stays out of discovery', async () => {
++  const listing=await q.item();
++  const response=await q.api('/auctions',{method:'POST',token:q.seller.token,body:{...auctionBody(listing.id),visibility:'PRIVATE'}});
++  assert.equal(response.status,201);
++  const a=response.json.data;
++  const stored=(await q.pool.query('SELECT access_code_hash FROM auctions WHERE id=$1',[a.id])).rows[0];
++  assert.notEqual(stored.access_code_hash,a.accessCode);
++  assert.equal(await bcrypt.compare(a.accessCode,stored.access_code_hash),true);
++  assert.equal('access_code_hash' in a,false);
++  assert.equal((await q.api('/auctions')).json.data.some(row=>row.id===a.id),false);
++  const details=await q.api('/auctions/'+a.id,{token:q.seller.token});
++  assert.equal(details.status,200);
++  assert.equal('accessCode' in details.json.data,false);
++  assert.equal('access_code_hash' in details.json.data,false);
++});
++
++check('QA-05: wrong private invitation code creates no access grant', async () => {
++  const a=await q.auction({visibility:'PRIVATE'});
++  expectError(await q.api('/auctions/'+a.id+'/access',{method:'POST',token:q.bidder.token,body:{accessCode:'wrong-code'}}),403,'INVALID_CODE');
++  assert.equal((await q.pool.query('SELECT count(*)::int AS n FROM private_auction_access WHERE auction_id=$1',[a.id])).rows[0].n,0);
++});
++
++check('PRIVATE-02: correct invitation grants access idempotently; owner cannot join as bidder', async () => {
++  const a=await q.auction({visibility:'PRIVATE'});
++  const path='/auctions/'+a.id+'/access',body={accessCode:a.accessCode};
++  expectError(await q.api(path,{method:'POST',token:q.seller.token,body}),403,'OWNER');
++  for(let i=0;i<2;i++) assert.equal((await q.api(path,{method:'POST',token:q.bidder.token,body})).status,200);
++  assert.equal((await q.pool.query('SELECT count(*)::int AS n FROM private_auction_access WHERE auction_id=$1',[a.id])).rows[0].n,1);
++  assert.equal((await q.api('/auctions/'+a.id,{token:q.bidder.token})).status,200);
++});
++
++check('QA-06: direct private details/history/bidding/commitment require an access grant', async () => {
++  const a=await q.auction({visibility:'PRIVATE'});
++  await q.commitment(a); // synthetic SUCCESS alone must not bypass private access
++  for(const request of [
++    q.api('/auctions/'+a.id),
++    q.api('/auctions/'+a.id,{token:q.bidder.token}),
++    q.api('/auctions/'+a.id+'/bids',{token:q.bidder.token}),
++    q.api('/auctions/'+a.id+'/commitment',{method:'POST',token:q.bidder.token,body:{}}),
++  ]) expectError(await request,404,'NOT_FOUND');
++  expectError(await q.bid(a),403,'NO_ACCESS');
++  assert.equal((await q.state(a)).bid_count,0);
++});
++
++check('COMMIT-01 / QA-07 partial: unavailable bank fails closed; browser SUCCESS and repeated requests do not approve', async () => {
++  const a=await q.auction();
++  for(let i=0;i<2;i++) expectError(await q.api('/auctions/'+a.id+'/commitment',{method:'POST',token:q.bidder.token,body:{status:'SUCCESS',sandbox_reference:'untrusted-browser'}}),503,'BANK_SANDBOX_UNAVAILABLE');
++  assert.equal((await q.pool.query('SELECT count(*)::int AS n FROM bid_commitments WHERE auction_id=$1',[a.id])).rows[0].n,0);
++  expectError(await q.bid(a),403,'COMMITMENT_REQUIRED');
++});
++
++check('COMMIT-02: commitment status is scoped to the caller and owner cannot initiate', async () => {
++  const a=await q.auction();
++  expectError(await q.api('/auctions/'+a.id+'/commitment',{method:'POST',token:q.seller.token,body:{}}),403,'OWNER');
++  const c=await q.commitment(a,q.bidder,'PENDING');
++  const result=await q.api('/auctions/'+a.id+'/commitment',{token:q.bidder.token});
++  assert.equal(result.status,200);
++  assert.equal(result.json.data.id,c.id);
++  assert.equal(result.json.data.status,'PENDING');
++  expectError(await q.api('/auctions/'+a.id+'/commitment',{token:q.bidder2.token}),404,'NOT_FOUND');
++});
++
++check('QA-21 API only: My Activity includes own listing/auction and bids in another auction', async () => {
++  const own=await q.auction({owner:q.bidder});
++  const other=await q.auction();
++  await q.commitment(other);
++  assert.equal((await q.bid(other)).status,201);
++  const items=await q.api('/me/items',{token:q.bidder.token});
++  assert.ok(items.json.data.some(item=>item.id===own.item_id));
++  assert.ok(items.json.data.every(item=>item.seller_id===q.bidder.id));
++  const auctions=await q.api('/me/auctions',{token:q.bidder.token});
++  assert.ok(auctions.json.data.some(item=>item.id===own.id));
++  assert.ok(auctions.json.data.some(item=>item.id===other.id));
++  assert.equal(new Set(auctions.json.data.map(item=>item.id)).size,auctions.json.data.length);
++});

@@ -1,0 +1,214 @@
+{
+  "package": "Database and API QA",
+  "baselineCommit": "d34d8cea88dcb308637f3610aa8f9373252aad08",
+  "preparedDateUtc": "2026-10-13T18:11:29.908302+00:00",
+  "addedRepositoryFiles": [
+    "Stage_4/QA_Report.md",
+    "backend/scripts/run-qa.js",
+    "backend/scripts/seed-qa.js",
+    "backend/tests/acceptance/qa.contract-gaps.test.js",
+    "backend/tests/acceptance/qa.external-blockers.test.js",
+    "backend/tests/helpers/qa-fixtures.js",
+    "backend/tests/database.test.js",
+    "backend/tests/bidding-closure.test.js",
+    "backend/tests/marketplace.test.js"
+  ],
+  "modifiedRepositoryFiles": [
+    "Stage_4/Bug_Tracker.md",
+    "Stage_4/Testing_Report.md",
+    "backend/package.json"
+  ],
+  "deletedRepositoryFiles": [],
+  "protectedStage3Sha256": "f41b15604e29da6f0982aa1c6367275307c80c38f8ce5c2ec3f3fd69cc40a11d",
+  "patchVerified": true,
+  "uploadStatus": "Not committed or uploaded",
+  "namesRemoved": true,
+  "evidenceStatus": "Prior actual run with name/path/project identifiers normalized; no database rerun after rename.",
+  "files": [
+    {
+      "path": "QA.patch",
+      "bytes": 80528,
+      "sha256": "428b39409a6d2373d1c5e6b53a383f89e6ec3f58b256e2933f7b32f55809fa81"
+    },
+    {
+      "path": "README_AR.md",
+      "bytes": 4898,
+      "sha256": "126f3e81e17e522bb132486ade82a746c856dc6a24e690b0aa8becef9dc46572"
+    },
+    {
+      "path": "evidence/PROVENANCE.json",
+      "bytes": 8087,
+      "sha256": "df1a8e3b7e674a6a23169318d6e3ec9f6d483d26f35eeb0fb8864777820fe5fa"
+    },
+    {
+      "path": "evidence/RENAMED_FILES_CHECKS.json",
+      "bytes": 833,
+      "sha256": "f7351b5c9e23fe3ec01d077b04fd089f8bdc8c1da738e29c889d30b049293558"
+    },
+    {
+      "path": "evidence/backend/junit.xml",
+      "bytes": 34147,
+      "sha256": "dff0a6fddf89e393ff0895be1ea71a024fa1fb2f3a44df966bcc3abaa74937fd"
+    },
+    {
+      "path": "evidence/backend/stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence/backend/stdout.txt",
+      "bytes": 15052,
+      "sha256": "a274c9b8561401ee12e513192597e6ca7f1035f4872eb7f262f036022343ebaa"
+    },
+    {
+      "path": "evidence/backend/summary.json",
+      "bytes": 2936,
+      "sha256": "0a502516f6f14b38ea859bb99bffe947723e7385c12f0f112f37863cb926b883"
+    },
+    {
+      "path": "evidence/backend/test-cases.json",
+      "bytes": 12220,
+      "sha256": "e5e2128b6adf7c4ac60689550b8e5b2c73d8cb2b0058a9994687be1950c6f969"
+    },
+    {
+      "path": "evidence/regression/added-file-syntax.json",
+      "bytes": 716,
+      "sha256": "3765c7837fbc89d076f2a43e576ab9c9bdb3d97132dae67ff03f0ad0a53290cb"
+    },
+    {
+      "path": "evidence/regression/backend-commands.json",
+      "bytes": 249,
+      "sha256": "67229dc6c2ffa02cd2c9a09506f28d9e65c7713c233d5881a23f2d78603fbad7"
+    },
+    {
+      "path": "evidence/regression/backend-default.stderr.txt",
+      "bytes": 85,
+      "sha256": "70fb6032f5a3f98ab14b968185446bc453148d147ad7d219c50f7a068714a612"
+    },
+    {
+      "path": "evidence/regression/backend-default.stdout.txt",
+      "bytes": 7043,
+      "sha256": "dfa33194dd5be4e989d6386236594b0cdcc5b2311f028e4aec14694c085bae7b"
+    },
+    {
+      "path": "evidence/regression/backend-syntax.stderr.txt",
+      "bytes": 172,
+      "sha256": "1a32518daf0005485f673fdedfcc53e04a807bc95312fc352234eb674020da9a"
+    },
+    {
+      "path": "evidence/regression/backend-syntax.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence/regression/frontend-build.stderr.txt",
+      "bytes": 70,
+      "sha256": "9e86c7e8a8e62fbc00506b9f27ee45f8bdcdaecafe1694062aab231f3968351c"
+    },
+    {
+      "path": "evidence/regression/frontend-build.stdout.txt",
+      "bytes": 328,
+      "sha256": "480d3fb92c5d3c0c41e2a8205efbe5866dd840fdf150c29737d1f0bb62ecd06f"
+    },
+    {
+      "path": "evidence/regression/frontend-commands.json",
+      "bytes": 251,
+      "sha256": "2a7f8f604c74c87ca396c13ef689cfdbd01cad3454c21533a192458313e8df51"
+    },
+    {
+      "path": "evidence/regression/frontend-tests.stderr.txt",
+      "bytes": 69,
+      "sha256": "bae99b22b95c593cf7065fb5d68045d90b972412266152e115e01ed99e2f5bc5"
+    },
+    {
+      "path": "evidence/regression/frontend-tests.stdout.txt",
+      "bytes": 279,
+      "sha256": "76f6bce07964567c9f0fbb34a57b5346abc26be65e67da912f21fff11f8fdc84"
+    },
+    {
+      "path": "evidence/seed/commands.json",
+      "bytes": 615,
+      "sha256": "24ca73da1e980578085ae0f030abaa5585eb5aa78b6c7880b408392d32b57e7a"
+    },
+    {
+      "path": "evidence/seed/creation.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence/seed/creation.stdout.txt",
+      "bytes": 1137,
+      "sha256": "c81206182ab2fcb565082095e8f0ea9b872d152a4ed83d5e4796b76863664d2a"
+    },
+    {
+      "path": "evidence/seed/database-assertions.txt",
+      "bytes": 127,
+      "sha256": "1243dfcf3d1c18563abefd899f8457824e1def152f716252624e9ce280be208e"
+    },
+    {
+      "path": "evidence/seed/repeat-protection.stderr.txt",
+      "bytes": 44,
+      "sha256": "1cbff3992ccc931bef669dac3a3c7a477bce2a906b4084c9423f9bdf7c2597b1"
+    },
+    {
+      "path": "evidence/seed/repeat-protection.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence/seed/unsafe-db-protection.stderr.txt",
+      "bytes": 799,
+      "sha256": "aa207dc2e38400a2fd7eaa749bb7702f51f52984e0a6f11013a20b91f1381178"
+    },
+    {
+      "path": "evidence/seed/unsafe-db-protection.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "files/Stage_4/QA_Report.md",
+      "bytes": 17992,
+      "sha256": "3a8497d040bc8dba793b761870db36ac38d15262c7396438804c5f640f444438"
+    },
+    {
+      "path": "files/backend/scripts/run-qa.js",
+      "bytes": 3948,
+      "sha256": "a6b0e41dd14d0561c97af56c61aabaff7783df6f1f84ed8161eb335714c56964"
+    },
+    {
+      "path": "files/backend/scripts/seed-qa.js",
+      "bytes": 4451,
+      "sha256": "21d399b7579a4d133cbbcd1c0ce759169a45044698cc3f2ee3391181efb4f15d"
+    },
+    {
+      "path": "files/backend/tests/acceptance/qa.contract-gaps.test.js",
+      "bytes": 3883,
+      "sha256": "8ce309738fa875e136a87629f836e0bc8efca0c51732e4f0c5bd86104a461520"
+    },
+    {
+      "path": "files/backend/tests/acceptance/qa.external-blockers.test.js",
+      "bytes": 961,
+      "sha256": "2a96acc605b84a73d5a02955c2f3939cf4a88651b68302054c70c6b0719abb1a"
+    },
+    {
+      "path": "files/backend/tests/bidding-closure.test.js",
+      "bytes": 15118,
+      "sha256": "14d10e226180e081ed47570c35add7660722ccdb46743ec218bf730d61dd8219"
+    },
+    {
+      "path": "files/backend/tests/database.test.js",
+      "bytes": 9011,
+      "sha256": "4085b7106cec147cd9cf3bfa709f335b3b496ac749e9f96784001671e48c80bc"
+    },
+    {
+      "path": "files/backend/tests/helpers/qa-fixtures.js",
+      "bytes": 7065,
+      "sha256": "69aa81602a4f502287d6d7e4d14658f28ece44100d1650888a556d5ddffcfc8c"
+    },
+    {
+      "path": "files/backend/tests/marketplace.test.js",
+      "bytes": 10909,
+      "sha256": "fab13a940c0f8d3047011f7b2df953b8ed95a51ca3fc705e3fc891ad4187432b"
+    }
+  ]
+}
