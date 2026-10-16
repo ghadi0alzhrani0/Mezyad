@@ -2,8 +2,16 @@ name: Account integration checks
 
 on:
   pull_request:
+    branches: [development, main]
   push:
-    branches: [main, 'feature/account-*']
+    branches:
+      - main
+      - development
+      - ghadi
+      - aseel
+      - abeer
+      - tala
+      - 'feature/account-*'
   workflow_dispatch:
 
 permissions:
